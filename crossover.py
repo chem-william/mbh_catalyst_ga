@@ -21,11 +21,28 @@ class Crossover:
         self.molecule_filter = molecule_filter
 
     def cut(self, mol: Chem.Mol) -> Optional[Tuple[Chem.Mol]]:
+        """
+        Attempts to cut a molecule at a single bond that is not part of a ring using a specific SMARTS pattern.
+
+        The SMARTS pattern "[*]-;!@[*]" is used to identify single bonds between any two atoms that are not in a ring.
+        If such a bond is found, the molecule is split at this location, and the resulting fragments are returned
+        as molecules with dummy atoms added where the cuts were made.
+
+        Parameters:
+        - mol (Chem.Mol): The input molecule to be cut.
+
+        Returns:
+        - Optional[Tuple[Chem.Mol]]: The resulting molecule fragments as Chem.Mol objects if the cut was successful;
+        None if no suitable bond was found or an error occurred during fragmentation.
+
+        Note:
+        - This function uses randomness to select among multiple possible cut sites if more than one is found.
+        """
         if not mol.HasSubstructMatch(Chem.MolFromSmarts("[*]-;!@[*]")):
             return None
         bis = random.choice(
             mol.GetSubstructMatches(Chem.MolFromSmarts("[*]-;!@[*]"))
-        )  # single bond not in ring
+        )
         bs = [mol.GetBondBetweenAtoms(bis[0], bis[1]).GetIdx()]
 
         fragments_mol = Chem.FragmentOnBonds(mol, bs, addDummies=True, dummyLabels=[(1, 1)])
