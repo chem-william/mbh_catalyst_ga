@@ -66,7 +66,11 @@ class Crossover:
             else:
                 if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]@[R;!D2]@[R]")):
                     return None
-                bis = np.random.choice(mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R;!D2]@[R]")))
+                # TODO: make this use numpy. see https://github.com/numpy/numpy/issues/10835#issuecomment-567233634
+                # on how to
+                bis = random.choice(
+                    mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R;!D2]@[R]"))
+                )
                 bis = (
                     (bis[0], bis[1]),
                     (bis[1], bis[2]),
