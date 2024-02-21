@@ -24,7 +24,7 @@ class Crossover:
         """
         Attempts to cut a molecule at a single bond that is not part of a ring using a specific SMARTS pattern.
 
-        The SMARTS pattern "[*]-;!@[*]" is used to identify single bonds between any two atoms that are not in a ring.
+        The SMARTS pattern "[*]-;!@[*]" identifies single bonds between any two atoms that are not in a ring.
         If such a bond is found, the molecule is split at this location, and the resulting fragments are returned
         as molecules with dummy atoms added where the cuts were made.
 
@@ -36,7 +36,7 @@ class Crossover:
         None if no suitable bond was found or an error occurred during fragmentation.
 
         Note:
-        - This function uses randomness to select among multiple possible cut sites if more than one is found.
+        - Randomly selects among multiple possible cut sites if more than one is found.
         """
         if not mol.HasSubstructMatch(Chem.MolFromSmarts("[*]-;!@[*]")):
             return None
@@ -54,7 +54,21 @@ class Crossover:
             return None
 
     def cut_ring(self, mol):
-        for i in range(10):
+        """
+        from https://www.daylight.com/dayhtml/doc/theory/theory.smarts.html
+
+        [R]: atom in any ring
+        @: any ring bond
+        D<n>: <n> explicit connections (implicit H's don't count)
+
+        [R]@[R]@[R]@[R] matches a chain of four atoms in any ring with ring bonds in-between
+
+        [R]@[R;!D2]@[R] matches a chain of three atoms where the middle atom does NOT have 2 further connections
+
+        I guess this is two distinct ways of generating fragments. see Fig. 1e in the original publication
+        DOI https://doi.org/10.1039/C8SC05372C 
+        """
+        for _ in range(10):
             if np.random.random() < 0.5:
                 if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]@[R]@[R]@[R]")):
                     return None
@@ -106,7 +120,7 @@ class Crossover:
 
         return not ring_allene and not macro_cycle and not double_bond_in_small_ring
 
-    def mol_OK(self, mol) -> bool:
+    def mol_OK(self, mol: Chem.Mol) -> bool:
         if not self.size_stdev or not self.average_size:
             print("size parameters are not defined")
         try:
@@ -188,7 +202,6 @@ class Crossover:
 
         return None
 
-
     def crossover_non_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol):
         for _ in range(10):
             fragments_A = self.cut(parent_A)
@@ -215,7 +228,7 @@ class Crossover:
 
     def crossover(
         self, parent_A: Chem.Mol, parent_B: Chem.Mol
-    ):
+    ) -> Optional[Chem.Mol]:
         parent_smiles = [Chem.MolToSmiles(parent_A), Chem.MolToSmiles(parent_B)]
         try:
             Chem.Kekulize(parent_A, clearAromaticFlags=True)
@@ -230,8 +243,8 @@ class Crossover:
 
             if new_mol != None:
                 new_smiles = Chem.MolToSmiles(new_mol)
-            if new_mol != None and new_smiles not in parent_smiles:
-                return new_mol
+                if new_smiles not in parent_smiles:
+                    return new_mol
         return None
 
 

@@ -137,7 +137,6 @@ def mutate(mol: Chem.Mol, co: Crossover):
         new_mols = []
         for m in new_mol_trial:
             m = m[0]
-            # print Chem.MolToSmiles(mol),mol_OK(mol)
             if co.mol_OK(m) and co.ring_OK(m):
                 new_mols.append(m)
 

@@ -218,9 +218,6 @@ class GA:
         sa_scores = np.array([sa_target_score_clipped(p) for p in population])
         # return sa_scores, scores * sa_scores
         return sa_scores, scores
-        # return sa_scores, [
-        #     ns * sa for ns, sa in zip(scores, sa_scores)
-        # ]  # rescale scores and force list type
 
     def print_results(self, population: list[Individual], fitness: npt.ArrayLike, generation: int):
         print(f"\nGeneration {generation+1}", flush=True)
@@ -252,10 +249,6 @@ class GA:
                 fd.write(Chem.MolToSmiles(m) + "\n")
 
         ids = [(0, i) for i in range(len(molecules))]
-        # results = self.slurm_scoring(self.scoring_function, molecules, ids)
-        # energies = [res[0] for res in results]
-        # geometries = [res[1] for res in results]
-        # prescores = [energy - 100 for energy in energies]
 
         energies, geometries = self.scoring(molecules, ids)
         sa_scores, scores = self.reweigh_scores_by_sa(
@@ -293,13 +286,6 @@ class GA:
                 generation + 1,
             )
 
-            # new_resuls = slurm_scoring(
-            #     scoring_function,
-            #     [ind.rdkit_mol for ind in new_population],
-            #     [ind.idx for ind in new_population],
-            # )
-            # new_energies = [res[0] for res in new_resuls]
-            # new_geometries = [res[1] for res in new_resuls]
             print(f"Scoring..")
             new_energies, new_geometries = self.scoring(
                 [ind.rdkit_mol for ind in new_population],
