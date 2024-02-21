@@ -115,10 +115,7 @@ def change_atom(mol: Chem.Mol) -> RxnSMARTS:
     return "[X:1]>>[Y:1]".replace("X", X).replace("Y", Y)
 
 
-def mutate(mol: Chem.Mol, co: Crossover, mutation_rate: float):
-    if np.random.random() > mutation_rate:
-        return mol
-
+def mutate(mol: Chem.Mol, co: Crossover):
     Chem.Kekulize(mol, clearAromaticFlags=True)
     p = [0.15, 0.14, 0.14, 0.14, 0.14, 0.14, 0.15]
     for _ in range(10):

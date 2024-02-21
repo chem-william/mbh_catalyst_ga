@@ -178,7 +178,7 @@ class GA:
                     new_population.append(new_child)
             else:
                 parent = np.random.choice(mating_pool)
-                mutated_child = mu.mutate(parent.rdkit_mol, self.crossover, 1.0)
+                mutated_child = mu.mutate(parent.rdkit_mol, self.crossover)
                 if mutated_child != None:
                     idx = (generation, counter)
                     counter += 1
