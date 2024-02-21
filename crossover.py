@@ -121,15 +121,6 @@ class Crossover:
 
         return True
 
-    # def amine_OK(self, mol) -> bool:
-    #     """
-    #     Checks if there is exactly one tertiary amine and if there is no charge
-    #     """
-    #     if len(mol.GetSubstructMatches(Chem.MolFromSmarts("[NX3&H0+0]"))) == 1:
-    #         return True
-    #     else:
-    #         return False
-
     def crossover_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol):
         ring_smarts = Chem.MolFromSmarts("[R]")
         if not parent_A.HasSubstructMatch(ring_smarts) and not parent_B.HasSubstructMatch(ring_smarts):
