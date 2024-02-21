@@ -55,7 +55,7 @@ class Crossover:
 
     def cut_ring(self, mol):
         for i in range(10):
-            if random.random() < 0.5:
+            if np.random.random() < 0.5:
                 if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]@[R]@[R]@[R]")):
                     return None
                 bis = random.choice(mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R]@[R]@[R]")))
@@ -66,13 +66,12 @@ class Crossover:
             else:
                 if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]@[R;!D2]@[R]")):
                     return None
-                bis = random.choice(mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R;!D2]@[R]")))
+                bis = np.random.choice(mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R;!D2]@[R]")))
                 bis = (
                     (bis[0], bis[1]),
                     (bis[1], bis[2]),
                 )
 
-            # print bis
             bs = [mol.GetBondBetweenAtoms(x, y).GetIdx() for x, y in bis]
 
             fragments_mol = Chem.FragmentOnBonds(
@@ -209,7 +208,6 @@ class Crossover:
                 return random.choice(new_mols)
 
         return None
-
 
     def crossover(
         self, parent_A: Chem.Mol, parent_B: Chem.Mol
