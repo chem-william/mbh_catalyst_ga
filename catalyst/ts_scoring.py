@@ -19,7 +19,7 @@ ts_dummy = Chem.SDMolSupplier(ts_file, removeHs=False, sanitize=True)[0]
 frag_energies = np.sum([-8.232710038092, -19.734652802142, -32.543971411432])  # 34 atoms
 
 
-def ts_scoring(cat, idx=(0, 0), ncpus=1, n_confs=10, cleanup=False):
+def ts_scoring(cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool = False):
     """Calculates electronic energy difference in kcal/mol between TS and reactants
 
     Args:
@@ -75,5 +75,6 @@ def ts_scoring(cat, idx=(0, 0), ncpus=1, n_confs=10, cleanup=False):
     )
 
     # Calculate electronic activation energy
-    De = (ts3d_energy - frag_energies - cat3d_energy) * hartree2kcalmol
+    # De = (ts3d_energy - frag_energies - cat3d_energy) * hartree2kcalmol
+    De = (ts3d_energy - frag_energies - cat3d_energy)
     return De, ts3d_geom, cat3d_geom

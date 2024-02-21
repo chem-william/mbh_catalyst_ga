@@ -2,12 +2,13 @@
 Written by Jan H. Jensen 2018
 """
 import random
+from typing import List
 
 import numpy as np
 from rdkit import Chem, rdBase
 from rdkit.Chem import AllChem
 
-import crossover as co
+from crossover import Crossover 
 
 rdBase.DisableLog("rdApp.error")
 
@@ -113,14 +114,13 @@ def change_atom(mol):
     return "[X:1]>>[Y:1]".replace("X", X).replace("Y", Y)
 
 
-def mutate(mol, mutation_rate, molecule_filter):
-
-    if random.random() > mutation_rate:
+def mutate(mol, co: Crossover, mutation_rate: float):
+    if np.random.random() > mutation_rate:
         return mol
 
     Chem.Kekulize(mol, clearAromaticFlags=True)
     p = [0.15, 0.14, 0.14, 0.14, 0.14, 0.14, 0.15]
-    for i in range(10):
+    for _ in range(10):
         rxn_smarts_list = 7 * [""]
         rxn_smarts_list[0] = insert_atom()
         rxn_smarts_list[1] = change_bond_order()
@@ -141,7 +141,7 @@ def mutate(mol, mutation_rate, molecule_filter):
         for m in new_mol_trial:
             m = m[0]
             # print Chem.MolToSmiles(mol),mol_OK(mol)
-            if co.mol_OK(m, molecule_filter) and co.ring_OK(m) and co.amine_OK(m):
+            if co.mol_OK(m) and co.ring_OK(m):
                 new_mols.append(m)
 
         if len(new_mols) > 0:
