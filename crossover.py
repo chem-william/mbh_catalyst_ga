@@ -2,7 +2,7 @@
 Written by Jan H. Jensen 2018
 """
 import random
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 from rdkit import Chem, rdBase
@@ -14,7 +14,7 @@ rdBase.DisableLog("rdApp.error")
 
 class Crossover:
     def __init__(
-        self, average_size: float, size_stdev: float, molecule_filter: List[Chem.Mol]
+        self, average_size: float, size_stdev: float, molecule_filter: list[Chem.Mol]
     ) -> None:
         self.average_size = average_size
         self.size_stdev = size_stdev

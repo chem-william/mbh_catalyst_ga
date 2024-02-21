@@ -1,7 +1,7 @@
 import random
 import shutil
 from pathlib import Path
-from typing import List, Tuple, Optional, Union, Literal
+from typing import Tuple, Optional, Union, Literal
 
 import numpy as np
 import numpy.typing as npt
@@ -27,7 +27,7 @@ class GA:
     def __init__(self,
         crossover: Crossover,
         population_size: int,
-        seed_population: List[str],
+        seed_population: list[str],
         scoring_function,
         generations: int,
         mating_pool_size: int,
@@ -36,7 +36,7 @@ class GA:
         minimization: bool,
         selection_method: Union[Literal["rank"], Literal["roulette"]],
         selection_pressure: float,
-        molecule_filters: List[Chem.Mol],
+        molecule_filters: list[Chem.Mol],
         path,
         random_seed: Optional[int] = None,
     ) -> None:
@@ -65,11 +65,11 @@ class GA:
 
         Args:
             sc_function (function): Scoring function which takes molecules and id (int,int) as input
-            population (List): List of rdkit Molecules
-            ids (List of Tuples of Int): Index of each molecule (Generation, Individual)
+            population (list): list of rdkit Molecules
+            ids (list of Tuples of Int): Index of each molecule (Generation, Individual)
 
         Returns:
-            List: List of results from scoring function
+            list: list of results from scoring function
         """
         executor = submitit.AutoExecutor(
             folder="scoring_tmp",
@@ -93,7 +93,7 @@ class GA:
             shutil.rmtree("scoring_tmp")
         return results
     
-    def scoring(self, molecules: List[Chem.Mol], ids: List[int]) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+    def scoring(self, molecules: list[Chem.Mol], ids: list[int]) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
         energies, structures = [], []
         for molecule, idx in zip(molecules, ids):
             tmp_result = self.scoring_function(molecule, idx)
@@ -109,7 +109,7 @@ class GA:
             return handle(e)
 
 
-    def make_initial_population(self, smiles: List[str], randomize: bool = True) -> List[Chem.Mol]:
+    def make_initial_population(self, smiles: list[str], randomize: bool = True) -> list[Chem.Mol]:
         if randomize:
             sample = np.random.choice(smiles, self.population_size)
         else:
@@ -155,8 +155,8 @@ class GA:
 
 
     def make_mating_pool(
-        self, population: List[Individual], fitness: npt.ArrayLike
-    ) -> List[Individual]:
+        self, population: list[Individual], fitness: npt.ArrayLike
+    ) -> list[Individual]:
         mating_pool = np.random.choice(
             population, p=fitness, size=self.mating_pool_size
         )
@@ -164,8 +164,8 @@ class GA:
 
 
     def reproduce(
-        self, mating_pool: List[Individual], generation: int
-    ) -> List[Individual]:
+        self, mating_pool: list[Individual], generation: int
+    ) -> list[Individual]:
         new_population = []
         counter = 0
         while len(new_population) < self.population_size:
@@ -193,7 +193,7 @@ class GA:
         return new_population
 
 
-    def sanitize(self, population: List[Individual], prune_population: bool) -> List[Individual]:
+    def sanitize(self, population: list[Individual], prune_population: bool) -> list[Individual]:
         if prune_population:
             sanitized_population = []
             for ind in population:
@@ -211,7 +211,7 @@ class GA:
 
 
     def reweigh_scores_by_sa(
-        self, population: List[Chem.Mol], scores: List[float]
+        self, population: list[Chem.Mol], scores: list[float]
     ) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
         """
         Reweighs scores with synthetic accessibility score
@@ -228,7 +228,7 @@ class GA:
         # ]  # rescale scores and force list type
 
 
-    def print_results(self, population: List[Individual], fitness: npt.ArrayLike, generation: int):
+    def print_results(self, population: list[Individual], fitness: npt.ArrayLike, generation: int):
         print(f"\nGeneration {generation+1}", flush=True)
         print(
             tabulate(
