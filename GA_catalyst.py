@@ -108,7 +108,6 @@ class GA:
             print(e)
             return handle(e)
 
-
     def make_initial_population(self, smiles: list[str], randomize: bool = True) -> list[Chem.Mol]:
         if randomize:
             sample = np.random.choice(smiles, self.population_size)
@@ -153,7 +152,6 @@ class GA:
 
         return fitness
 
-
     def make_mating_pool(
         self, population: list[Individual], fitness: npt.ArrayLike
     ) -> list[Individual]:
@@ -161,7 +159,6 @@ class GA:
             population, p=fitness, size=self.mating_pool_size
         )
         return mating_pool
-
 
     def reproduce(
         self, mating_pool: list[Individual], generation: int
@@ -180,7 +177,7 @@ class GA:
                     new_child = Individual(rdkit_mol=new_child, idx=idx)
                     new_population.append(new_child)
             else:
-                parent = random.choice(mating_pool)
+                parent = np.random.choice(mating_pool)
                 mutated_child = mu.mutate(parent.rdkit_mol, self.crossover, 1.0)
                 if mutated_child != None:
                     idx = (generation, counter)
@@ -191,7 +188,6 @@ class GA:
                     )
                     new_population.append(mutated_child)
         return new_population
-
 
     def sanitize(self, population: list[Individual], prune_population: bool) -> list[Individual]:
         if prune_population:
@@ -209,7 +205,6 @@ class GA:
         new_population = sanitized_population[:self.population_size]
         return new_population  # selects individuals with lowest values
 
-
     def reweigh_scores_by_sa(
         self, population: list[Chem.Mol], scores: list[float]
     ) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
@@ -226,7 +221,6 @@ class GA:
         # return sa_scores, [
         #     ns * sa for ns, sa in zip(scores, sa_scores)
         # ]  # rescale scores and force list type
-
 
     def print_results(self, population: list[Individual], fitness: npt.ArrayLike, generation: int):
         print(f"\nGeneration {generation+1}", flush=True)
@@ -255,9 +249,7 @@ class GA:
         generations_file = Path(self.path) / "generations.gen"
         with open(str(generations_file.resolve()), "w+") as fd:
             for m in molecules:
-                # smi = Chem.MolToSmiles(m)
-                fd.write(Chem.MolToSmiles(m))
-            # f.writelines([Chem.MolToSmiles(m) + "\n" for m in molecules])
+                fd.write(Chem.MolToSmiles(m) + "\n")
 
         ids = [(0, i) for i in range(len(molecules))]
         # results = self.slurm_scoring(self.scoring_function, molecules, ids)
@@ -266,7 +258,6 @@ class GA:
         # prescores = [energy - 100 for energy in energies]
 
         energies, geometries = self.scoring(molecules, ids)
-        # prescores = energies - 100
         sa_scores, scores = self.reweigh_scores_by_sa(
             neutralize_molecules(molecules), energies
         )
@@ -365,7 +356,6 @@ if __name__ == "__main__":
     # with open("./ZINC_amines.smi") as fin:
     #     seed_population = [smiles for smiles in fin]
 
-    print(seed_population)
     prune_population = True
     random_seed = 42
     minimization = True
