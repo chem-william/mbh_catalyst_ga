@@ -119,17 +119,16 @@ def mutate(mol: Chem.Mol, co: Crossover):
     Chem.Kekulize(mol, clearAromaticFlags=True)
     p = [0.15, 0.14, 0.14, 0.14, 0.14, 0.14, 0.15]
     for _ in range(10):
-        rxn_smarts_list = 7 * [""]
-        rxn_smarts_list[0] = insert_atom()
-        rxn_smarts_list[1] = change_bond_order()
-        rxn_smarts_list[2] = delete_cyclic_bond()
-        rxn_smarts_list[3] = add_ring()
-        rxn_smarts_list[4] = delete_atom()
-        rxn_smarts_list[5] = change_atom(mol)
-        rxn_smarts_list[6] = append_atom()
+        rxn_smarts_list = [
+            insert_atom(),
+            change_bond_order(),
+            delete_cyclic_bond(),
+            add_ring(),
+            delete_atom(),
+            change_atom(mol),
+            append_atom(),
+        ]
         rxn_smarts = np.random.choice(rxn_smarts_list, p=p)
-
-        # print('mutation',rxn_smarts)
 
         rxn = AllChem.ReactionFromSmarts(rxn_smarts)
 
