@@ -214,19 +214,14 @@ class Crossover:
             pass
         for _ in range(10):
             if np.random.random() <= 0.5:
-                # print 'non-ring crossover'
                 new_mol = self.crossover_non_ring(parent_A, parent_B)
-                if new_mol != None:
-                    new_smiles = Chem.MolToSmiles(new_mol)
-                if new_mol != None and new_smiles not in parent_smiles:
-                    return new_mol
             else:
-                # print 'ring crossover'
                 new_mol = self.crossover_ring(parent_A, parent_B)
-                if new_mol != None:
-                    new_smiles = Chem.MolToSmiles(new_mol)
-                if new_mol != None and new_smiles not in parent_smiles:
-                    return new_mol
+
+            if new_mol != None:
+                new_smiles = Chem.MolToSmiles(new_mol)
+            if new_mol != None and new_smiles not in parent_smiles:
+                return new_mol
         return None
 
 
