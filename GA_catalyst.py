@@ -148,11 +148,20 @@ class GA:
             sample = smiles[:self.population_size]
         
         population = []
+        failed = False
         for smi in sample:
             mol_obj = Chem.MolFromSmiles(smi)
             if mol_obj is not None:
-                population.append(mol_obj)
+                linked_mol_smiles = self._try_attach(mol_obj, max_tries=5)
+                linked_mol_obj = Chem.MolFromSmiles(linked_mol_smiles)
+                if linked_mol_obj is not None:
+                    population.append(linked_mol_obj)
+                else:
+                    failed = True
             else:
+                failed = True
+
+            if failed:
                 print(f"Failed to add {smi} to initial population")
 
         return population

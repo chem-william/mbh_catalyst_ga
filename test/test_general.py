@@ -76,3 +76,37 @@ def test_attach_electrodes_correct(smiles, general_ga_fixture):
         if atom.GetSymbol() == general_ga_fixture.tagger_mol:
             amount_tag += 1
     assert amount_tag == 2
+
+
+@pytest.mark.parametrize(
+    "smiles_population",
+    [
+        [
+            "CCC(C)(CC)C1C=CCC1C",
+            "CC(C=C)=CCC=C(C#C)C#C",
+            "CC1CC2(C)CCC(=C)CC2=C1",
+            "CCC(C)C#CCCCC1CC1",
+            "CC1CCC2CCCC(C2)CC1",
+            "CC1CCC2C3CC(=C)C2C3C1",
+            "CC=C1CC=C2CC=CCC12",
+            "C=CC1(CC(=C)CC(=C)C1)C=C",
+            "CCCC=CC(C)C(C)C#CC",
+            "C=CC1CC#CC=CCCC=C1",
+        ]
+    ],
+)
+def test_initial_population(smiles_population, general_ga_fixture):
+    molecules = general_ga_fixture.make_initial_population(
+        smiles_population, randomize=False
+    )
+    for molecule in molecules:
+        smiles = Chem.MolToSmiles(molecule)
+        assert smiles is not None
+
+        amount_tag = 0
+        for atom in molecule.GetAtoms():
+            if atom.GetSymbol() == general_ga_fixture.tagger_mol:
+                amount_tag += 1
+        print(smiles)
+        assert amount_tag == 2
+    assert False
