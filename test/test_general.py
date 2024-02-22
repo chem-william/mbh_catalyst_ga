@@ -11,6 +11,7 @@ import filters
 
 
 TAGGER_ATOM = "Se"
+DUMMY_ATOM = "C"
 
 
 def is_linkers_ok(molecule: Chem.Mol, ga: GA) -> bool:
@@ -204,7 +205,7 @@ def test_delete_atom_a(general_crossover_fixture, smiles, expected_result):
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    reaction = mutate(mol, DeleteAtomChoices.a.value.replace("X", co.tagger_atom), co)
+    reaction = mutate(mol, DeleteAtomChoices.a.value.replace("TAG", co.tagger_atom), co)
     assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
 
 
@@ -221,7 +222,7 @@ def test_delete_atom_b(general_crossover_fixture, smiles, expected_result):
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    reaction = mutate(mol, DeleteAtomChoices.b.value.replace("X", co.tagger_atom), co)
+    reaction = mutate(mol, DeleteAtomChoices.b.value.replace("TAG", co.tagger_atom), co)
     assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
 
 
@@ -237,7 +238,7 @@ def test_delete_atom_c(general_crossover_fixture, smiles, expected_result):
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    reaction = mutate(mol, DeleteAtomChoices.c.value.replace("X", co.tagger_atom), co)
+    reaction = mutate(mol, DeleteAtomChoices.c.value.replace("TAG", co.tagger_atom), co)
     assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
 
 
@@ -281,7 +282,7 @@ def test_delete_atom_d(general_crossover_fixture, smiles, expected_results):
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    reaction = mutate(mol, DeleteAtomChoices.d.value.replace("X", co.tagger_atom), co)
+    reaction = mutate(mol, DeleteAtomChoices.d.value.replace("TAG", co.tagger_atom), co)
     for reac, expected in zip(reaction, expected_results):
         assert compare_smiles(Chem.MolToSmiles(reac), expected)
 
@@ -326,6 +327,88 @@ def test_delete_atom_e(general_crossover_fixture, smiles, expected_results):
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    reaction = mutate(mol, DeleteAtomChoices.e.value.replace("X", co.tagger_atom), co)
+    reaction = mutate(mol, DeleteAtomChoices.e.value.replace("TAG", co.tagger_atom), co)
     for reac, expected in zip(reaction, expected_results):
         assert compare_smiles(Chem.MolToSmiles(reac), expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])NC(C)([SeH])C1(N)",
+            [
+                "CC1([SeH])NC([SeH])(CC)C1N",
+                "CC1([SeH])C(N)C(C)([SeH])N1C",
+                "CC1([SeH])NC([SeH])(CC)C1N",
+                "CC1([SeH])NC(C)([SeH])C1(N)C",
+                "CC1([SeH])NC(C)([SeH])C1NC",
+            ],
+        ),
+    ],
+)
+def test_append_atom_single(general_crossover_fixture, smiles, expected_results):
+    from mutate import AppendAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AppendAtomChoices.SINGLE.value.replace("X", "-" + DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        assert compare_smiles(Chem.MolToSmiles(reac), expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])NC([SeH])C1N",
+            [
+                "C=CC1([SeH])NC([SeH])C1N",
+                "C=NC1C([SeH])NC1(C)[SeH]",
+            ],
+        ),
+    ],
+)
+def test_append_atom_double(general_crossover_fixture, smiles, expected_results):
+    from mutate import AppendAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AppendAtomChoices.DOUBLE.value.replace("X", "=" + DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    # for item in reaction:
+    #     print(Chem.MolToSmiles(item))
+    # assert False
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "[SeH]CC([SeH])CCNCCCCC(Br)C",
+            [
+                "C#CC(Br)CCCCNCCC([SeH])C[SeH]",
+            ],
+        ),
+    ],
+)
+def test_append_atom_triple(general_crossover_fixture, smiles, expected_results):
+    from mutate import AppendAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AppendAtomChoices.TRIPLE.value.replace("X", "#" + DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
