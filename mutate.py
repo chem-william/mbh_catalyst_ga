@@ -14,38 +14,40 @@ rdBase.DisableLog("rdApp.error")
 RxnSMARTS = str
 
 class DeleteAtomChoices(Enum):
-    a = "[!X:1]~[D1;!X]>>[*:1]"
+    a = "[!TAG:1]~[D1;!TAG]>>[*:1]"
     b = "[*:1]~[D2]~[*:2]>>[*:1]-[*:2]"
     c = "[*:1]~[D3](~[*;!H0:2])~[*:3]>>[*:1]-[*:2]-[*:3]"
-    d = "[*:1]~[D4](~[!X;!H0:2])(~[!X;!H0:3])~[*:4]>>[*:1]-[*:2]-[*:3]-[*:4]"
+    d = "[*:1]~[D4](~[!TAG;!H0:2])(~[!TAG;!H0:3])~[*:4]>>[*:1]-[*:2]-[*:3]-[*:4]"
     e = "[*:1]~[D4](~[*;!H0;!H1:2])(~[*:3])~[*:4]>>[*:1]-[*:2](-[*:3])-[*:4]"
 
 def delete_atom(co: Crossover) -> RxnSMARTS:
     p = [0.25, 0.25, 0.25, 0.1875, 0.0625]
 
     delete_action = np.random.choice(list(DeleteAtomChoices), p=p)
-    return delete_action.value.replace("X", co.tagger_atom)
+    return delete_action.value.replace("TAG", co.tagger_atom)
 
+class AppendAtomChoices(Enum):
+    # SINGLE = ["C", "N", "O", "F", "S", "Cl", "Br"]
+    # DOUBLE = ["C", "N", "O"]
+    # TRIPLE = ["C", "N"]
+    SINGLE = "[!TAG;!H0:1]>>[*:1]X"
+    DOUBLE = "[*;!H0;!H1:1]>>[*:1]X"
+    TRIPLE = "[*;H3:1]>>[*:1]X"
+def append_atom(p_BO: list[float], co: Crossover) -> RxnSMARTS:
+    append_action = np.random.choice(list(AppendAtomChoices), p=p_BO)
 
-def append_atom() -> RxnSMARTS:
-    choices = [
-        ["single", ["C", "N", "O", "F", "S", "Cl", "Br"], 7 * [1.0 / 7.0]],
-        ["double", ["C", "N", "O"], 3 * [1.0 / 3.0]],
-        ["triple", ["C", "N"], 2 * [1.0 / 2.0]],
-    ]
-    p_BO = [0.60, 0.35, 0.05]
+    if append_action is AppendAtomChoices.SINGLE:
+        new_atom = np.random.choice(["C", "N", "O", "F", "S", "Cl", "Br"])
+        rxn_smarts = append_action.value.replace("X", "-" + new_atom)
+        rxn_smarts = rxn_smarts.replace("TAG", co.tagger_atom)
 
-    index = np.random.choice(list(range(3)), p=p_BO)
+    if append_action is append_action.DOUBLE:
+        new_atom = np.random.choice(["C", "N", "O"])
+        rxn_smarts = append_action.value.replace("X", "=" + new_atom)
 
-    BO, atom_list, p = choices[index]
-    new_atom = np.random.choice(atom_list, p=p)
-
-    if BO == "single":
-        rxn_smarts = "[*;!H0:1]>>[*:1]X".replace("X", "-" + new_atom)
-    if BO == "double":
-        rxn_smarts = "[*;!H0;!H1:1]>>[*:1]X".replace("X", "=" + new_atom)
-    if BO == "triple":
-        rxn_smarts = "[*;H3:1]>>[*:1]X".replace("X", "#" + new_atom)
+    if append_action is AppendAtomChoices.TRIPLE:
+        new_atom = np.random.choice(["C", "N"])
+        rxn_smarts = append_action.value.replace("X", "#" + new_atom)
 
     return rxn_smarts
 
@@ -133,7 +135,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
             add_ring(),
             delete_atom(co),
             change_atom(mol),
-            append_atom(),
+            append_atom(p_BO=[0.60, 0.35, 0.05], co=co),
         ]
         rxn_smarts = np.random.choice(rxn_smarts_list, p=p)
 
