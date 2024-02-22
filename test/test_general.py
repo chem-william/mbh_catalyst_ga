@@ -9,12 +9,14 @@ from crossover import Crossover
 import filters
 
 
-def check_amount_linkers(molecule: Chem.Mol, ga: GA) -> int:
+def is_linkers_ok(molecule: Chem.Mol, ga: GA) -> bool:
     amount_tag = 0
     for atom in molecule.GetAtoms():
         if atom.GetSymbol() == ga.crossover.tagger_atom:
             amount_tag += 1
-    return amount_tag
+            num_hs = atom.GetTotalNumHs()
+
+    return amount_tag == 2 and num_hs == 1
 
 
 @pytest.fixture
@@ -88,8 +90,7 @@ def test_attach_electrodes_correct(smiles, general_ga_fixture):
     assert new_smiles is not None
 
     new_molecule = Chem.MolFromSmiles(new_smiles)
-    amount_tag = check_amount_linkers(new_molecule, general_ga_fixture)
-    assert amount_tag == 2
+    assert is_linkers_ok(new_molecule, general_ga_fixture)
 
 
 @pytest.mark.parametrize(
@@ -117,8 +118,7 @@ def test_initial_population(smiles_population, general_ga_fixture):
         smiles = Chem.MolToSmiles(molecule)
         assert smiles is not None
 
-        amount_tag = check_amount_linkers(molecule, general_ga_fixture)
-        assert amount_tag == 2
+        assert is_linkers_ok(molecule, general_ga_fixture)
 
 
 @pytest.mark.parametrize(
@@ -156,10 +156,8 @@ def test_crossover(smiles_population, general_ga_fixture, general_crossover_fixt
         for i in range(inner_tries):
             child = general_crossover_fixture.crossover(mol1, mol2)
             if child is not None:
-                amount_tag = check_amount_linkers(child, general_ga_fixture)
-
                 print(Chem.MolToSmiles(child))
-                assert amount_tag == 2
+                assert is_linkers_ok(child, general_ga_fixture)
                 correct_molecules += 1
     assert correct_molecules > inner_tries
     assert False
