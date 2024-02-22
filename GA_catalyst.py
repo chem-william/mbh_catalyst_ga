@@ -38,9 +38,8 @@ class GA:
         mutation_rate: float,
         prune_population: bool,
         minimization: bool,
-        selection_method: Union[Literal["rank"], Literal["roulette"]],
+        selection_method: Literal["rank", "roulette"],
         selection_pressure: float,
-        molecule_filters: list[Chem.Mol],
         path,
         random_seed: Optional[int] = None,
     ) -> None:
@@ -61,7 +60,6 @@ class GA:
         self.minimization = minimization
         self.selection_method = selection_method
         self.selection_pressure = selection_pressure
-        self.molecule_filters = molecule_filters
         self.path = path
 
         self.tagger_mol = "Se"
@@ -107,7 +105,7 @@ class GA:
         return results
 
     def scoring(
-        self, molecules: list[Chem.Mol], ids: list[int]
+        self, molecules: list[Chem.Mol], ids: list[tuple[int, int]]
     ) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
         energies, structures = [], []
         for molecule, idx in zip(molecules, ids):
@@ -159,7 +157,7 @@ class GA:
         self, smiles: list[str], randomize: bool = True
     ) -> list[Chem.Mol]:
         if randomize:
-            sample = np.random.choice(smiles, self.population_size)
+            sample = list(np.random.choice(smiles, self.population_size))
         else:
             sample = smiles[: self.population_size]
 
@@ -182,13 +180,13 @@ class GA:
 
         return population
 
-    def calculate_normalized_fitness(self, scores: npt.ArrayLike) -> npt.ArrayLike:
+    def calculate_normalized_fitness(self, scores: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         normalized_fitness = scores / np.sum(scores)
         return normalized_fitness
 
-    def calculate_fitness(self, scores: npt.ArrayLike) -> npt.ArrayLike:
+    def calculate_fitness(self, scores: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
         if self.minimization:
-            scores *= -1
+            scores *= -1.0
 
         if self.selection_method == "roulette":
             fitness = scores
@@ -215,7 +213,7 @@ class GA:
         return fitness
 
     def make_mating_pool(
-        self, population: list[Individual], fitness: npt.ArrayLike
+        self, population: list[Individual], fitness: npt.NDArray[np.float64]
     ) -> list[Individual]:
         mating_pool = np.random.choice(
             population, p=fitness, size=self.mating_pool_size
@@ -257,7 +255,7 @@ class GA:
         self, population: list[Individual], prune_population: bool
     ) -> list[Individual]:
         if prune_population:
-            sanitized_population = []
+            sanitized_population: list[Individual] = []
             for ind in population:
                 if ind.smiles not in [si.smiles for si in sanitized_population]:
                     sanitized_population.append(ind)
@@ -393,7 +391,7 @@ class GA:
             f.writelines(str(generations_list))
 
 
-def test_scoring(molecule: Chem.Mol, idx: int) -> Tuple[int, int]:
+def test_scoring(molecule: Chem.Mol, idx: int) -> Tuple[float, int]:
     return 1 / float(molecule.GetNumHeavyAtoms()), idx
 
 
@@ -436,7 +434,6 @@ if __name__ == "__main__":
         minimization=minimization,
         selection_method=selection_method,
         selection_pressure=selection_pressure,
-        molecule_filters=molecule_filters,
         path=".",
         seed_population=seed_population,
     )

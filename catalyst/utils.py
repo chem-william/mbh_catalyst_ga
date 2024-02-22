@@ -1,3 +1,4 @@
+from typing import Optional
 from dataclasses import dataclass, field
 
 from rdkit import Chem
@@ -6,8 +7,8 @@ from rdkit import Chem
 @dataclass
 class Individual:
     rdkit_mol: Chem.rdchem.Mol = field(repr=False, compare=False)
-    idx: int = field(default=None, compare=True, repr=True)
-    smiles: str = field(init=False, compare=True, repr=True)
+    idx: Optional[int] = field(default=None, compare=True, repr=True)
+    smiles: str = field(init="", compare=True, repr=True)
     score: float = field(default=None, repr=False, compare=False)
     energy: float = field(default=None, repr=False, compare=False)
     sa_score: float = field(default=None, repr=False, compare=False)
