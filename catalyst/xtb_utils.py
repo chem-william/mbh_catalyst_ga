@@ -98,7 +98,9 @@ def xtb_optimize(
         raise Exception("Conformer is not 3D")
 
     if not name:
-        name = "tmp_" + "".join(random.choices(string.ascii_uppercase + string.digits, k=4))
+        name = "tmp_" + "".join(
+            random.choices(string.ascii_uppercase + string.digits, k=4)
+        )
 
     # set SCRATCH if environmental variable
     try:
@@ -108,7 +110,9 @@ def xtb_optimize(
     print(f"SCRATCH DIR = {scr_dir}")
 
     charge = Chem.GetFormalCharge(mol)
-    xyz_files = write_xtb_input_files(mol, "xtbmol", destination=os.path.join(scr_dir, name))
+    xyz_files = write_xtb_input_files(
+        mol, "xtbmol", destination=os.path.join(scr_dir, name)
+    )
 
     # xtb options
     XTB_OPTIONS = {

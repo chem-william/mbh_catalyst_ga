@@ -16,10 +16,14 @@ from xtb_utils import xtb_optimize
 ts_file = os.path.join(catalyst_dir, "input_files/ts3_dummy.sdf")
 ts_dummy = Chem.SDMolSupplier(ts_file, removeHs=False, sanitize=True)[0]
 
-frag_energies = np.sum([-8.232710038092, -19.734652802142, -32.543971411432])  # 34 atoms
+frag_energies = np.sum(
+    [-8.232710038092, -19.734652802142, -32.543971411432]
+)  # 34 atoms
 
 
-def ts_scoring(cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool = False):
+def ts_scoring(
+    cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool = False
+):
     """Calculates electronic energy difference in kcal/mol between TS and reactants
 
     Args:
@@ -34,7 +38,9 @@ def ts_scoring(cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool
 
     ts2ds = connect_cat_2d(ts_dummy, cat)
     if len(ts2ds) > 1:
-        print(f"{Chem.MolToSmiles(Chem.RemoveHs(cat))} contains more than one tertiary amine")
+        print(
+            f"{Chem.MolToSmiles(Chem.RemoveHs(cat))} contains more than one tertiary amine"
+        )
     ts2d = ts2ds[0]
 
     # Embed TS
@@ -60,9 +66,13 @@ def ts_scoring(cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool
     # Embed Catalyst
     cat3d = copy.deepcopy(cat)
     cat3d = Chem.AddHs(cat3d)
-    cids = Chem.rdDistGeom.EmbedMultipleConfs(cat3d, numConfs=n_confs, pruneRmsThresh=0.1)
+    cids = Chem.rdDistGeom.EmbedMultipleConfs(
+        cat3d, numConfs=n_confs, pruneRmsThresh=0.1
+    )
     if len(cids) == 0:
-        raise ValueError(f"Could not embed catalyst {Chem.MolToSmiles(Chem.RemoveHs(cat))}")
+        raise ValueError(
+            f"Could not embed catalyst {Chem.MolToSmiles(Chem.RemoveHs(cat))}"
+        )
 
     # Calc Energy of Cat
     cat3d_energy, cat3d_geom = xtb_optimize(
@@ -76,5 +86,5 @@ def ts_scoring(cat, idx=(0, 0), ncpus: int = 1, n_confs: int = 10, cleanup: bool
 
     # Calculate electronic activation energy
     # De = (ts3d_energy - frag_energies - cat3d_energy) * hartree2kcalmol
-    De = (ts3d_energy - frag_energies - cat3d_energy)
+    De = ts3d_energy - frag_energies - cat3d_energy
     return De, ts3d_geom, cat3d_geom

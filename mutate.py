@@ -1,6 +1,7 @@
 """
 Written by Jan H. Jensen 2018
 """
+
 import random
 from typing import List
 
@@ -8,11 +9,12 @@ import numpy as np
 from rdkit import Chem, rdBase
 from rdkit.Chem import AllChem
 
-from crossover import Crossover 
+from crossover import Crossover
 
 rdBase.DisableLog("rdApp.error")
 
 RxnSMARTS = str
+
 
 def delete_atom() -> RxnSMARTS:
     choices = [

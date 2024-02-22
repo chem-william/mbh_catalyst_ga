@@ -383,7 +383,9 @@ def BO2mol(
     BO_valences = list(BO_matrix.sum(axis=1))
 
     if l != l2:
-        raise RuntimeError("sizes of adjMat ({0:d}) and Atoms {1:d} differ".format(l, l2))
+        raise RuntimeError(
+            "sizes of adjMat ({0:d}) and Atoms {1:d} differ".format(l, l2)
+        )
 
     rwMol = Chem.RWMol(mol)
 
@@ -413,7 +415,9 @@ def BO2mol(
     return mol
 
 
-def set_atomic_charges(mol, atoms, atomic_valence_electrons, BO_valences, BO_matrix, mol_charge):
+def set_atomic_charges(
+    mol, atoms, atomic_valence_electrons, BO_valences, BO_matrix, mol_charge
+):
     """ """
     q = 0
     for i, atom in enumerate(atoms):
@@ -576,7 +580,11 @@ def AC2BO(AC, atoms, charge, allow_charged_fragments=True, use_graph=True):
 
             if status:
                 return BO, atomic_valence_electrons
-            elif BO.sum() >= best_BO.sum() and valences_not_too_large(BO, valences) and charge_OK:
+            elif (
+                BO.sum() >= best_BO.sum()
+                and valences_not_too_large(BO, valences)
+                and charge_OK
+            ):
                 best_BO = BO.copy()
 
     return best_BO, atomic_valence_electrons
@@ -609,7 +617,9 @@ def AC2mol(mol, AC, atoms, charge, allow_charged_fragments=True, use_graph=True)
         return []
 
     # BO2mol returns an arbitrary resonance form. Let's make the rest
-    mols = rdchem.ResonanceMolSupplier(mol, Chem.UNCONSTRAINED_CATIONS, Chem.UNCONSTRAINED_ANIONS)
+    mols = rdchem.ResonanceMolSupplier(
+        mol, Chem.UNCONSTRAINED_CATIONS, Chem.UNCONSTRAINED_ANIONS
+    )
     mols = [mol for mol in mols]
 
     return mols
@@ -751,9 +761,9 @@ def xyz2AC_huckel(atomicNumList, xyz, charge):
     passed, result = rdEHTTools.RunMol(mol_huckel)
     opop = result.GetReducedOverlapPopulationMatrix()
     tri = np.zeros((num_atoms, num_atoms))
-    tri[
-        np.tril(np.ones((num_atoms, num_atoms), dtype=bool))
-    ] = opop  # lower triangular to square matrix
+    tri[np.tril(np.ones((num_atoms, num_atoms), dtype=bool))] = (
+        opop  # lower triangular to square matrix
+    )
     for i in range(num_atoms):
         for j in range(i + 1, num_atoms):
             pair_pop = abs(tri[j, i])
@@ -837,7 +847,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(usage="%(prog)s [options] molecule.xyz")
     parser.add_argument("structure", metavar="structure", type=str)
     parser.add_argument("-s", "--sdf", action="store_true", help="Dump sdf file")
-    parser.add_argument("--ignore-chiral", action="store_true", help="Ignore chiral centers")
+    parser.add_argument(
+        "--ignore-chiral", action="store_true", help="Ignore chiral centers"
+    )
     parser.add_argument(
         "--no-charged-fragments", action="store_true", help="Allow radicals to be made"
     )

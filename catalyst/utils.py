@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 
 from rdkit import Chem
 
+
 @dataclass
 class Individual:
     rdkit_mol: Chem.rdchem.Mol = field(repr=False, compare=False)
@@ -13,7 +14,9 @@ class Individual:
     structure: tuple = field(default=None, compare=False, repr=False)
 
     def __post_init__(self):
-        self.smiles = Chem.MolToSmiles(Chem.MolFromSmiles(Chem.MolToSmiles(self.rdkit_mol)))
+        self.smiles = Chem.MolToSmiles(
+            Chem.MolFromSmiles(Chem.MolToSmiles(self.rdkit_mol))
+        )
 
 
 def read_xyz(content, element_symbols=False):

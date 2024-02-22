@@ -5,6 +5,7 @@ from typing import Tuple, Optional, Union, Literal
 
 import numpy as np
 import numpy.typing as npt
+
 # import submitit
 from rdkit import Chem
 from scipy.stats import rankdata
@@ -13,6 +14,7 @@ from tabulate import tabulate
 from crossover import Crossover
 import filters
 import mutate as mu
+
 # from catalyst import ts_scoring
 from catalyst.utils import Individual
 from sa import neutralize_molecules, sa_target_score_clipped
@@ -23,8 +25,10 @@ SLURM_SETUP = {
     "slurm_array_parallelism": 10,
 }
 
+
 class GA:
-    def __init__(self,
+    def __init__(
+        self,
         crossover: Crossover,
         population_size: int,
         seed_population: list[str],
@@ -61,8 +65,15 @@ class GA:
         self.path = path
 
         self.tagger_mol = "Se"
-    
-    def slurm_scoring(self, sc_function, population, ids, cpus_per_task: int = 4, cleanup: bool = False):
+
+    def slurm_scoring(
+        self,
+        sc_function,
+        population,
+        ids,
+        cpus_per_task: int = 4,
+        cleanup: bool = False,
+    ):
         """Evaluates a scoring function for population on SLURM cluster
 
         Args:
@@ -94,8 +105,10 @@ class GA:
         if cleanup:
             shutil.rmtree("scoring_tmp")
         return results
-    
-    def scoring(self, molecules: list[Chem.Mol], ids: list[int]) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
+
+    def scoring(
+        self, molecules: list[Chem.Mol], ids: list[int]
+    ) -> Tuple[npt.ArrayLike, npt.ArrayLike]:
         energies, structures = [], []
         for molecule, idx in zip(molecules, ids):
             tmp_result = self.scoring_function(molecule, idx)
@@ -130,7 +143,9 @@ class GA:
             return None
 
         modifiable = Chem.RWMol(molecule)
-        electrode_indices = np.random.choice(usable_carbon_indices, size=2, replace=False)
+        electrode_indices = np.random.choice(
+            usable_carbon_indices, size=2, replace=False
+        )
         for electrode_index in electrode_indices:
             tag = modifiable.AddAtom(Chem.Atom(self.tagger_mol))
             modifiable.AddBond(tag, int(electrode_index), Chem.BondType.SINGLE)
@@ -140,13 +155,14 @@ class GA:
             return None
         return generated_smiles
 
-
-    def make_initial_population(self, smiles: list[str], randomize: bool = True) -> list[Chem.Mol]:
+    def make_initial_population(
+        self, smiles: list[str], randomize: bool = True
+    ) -> list[Chem.Mol]:
         if randomize:
             sample = np.random.choice(smiles, self.population_size)
         else:
-            sample = smiles[:self.population_size]
-        
+            sample = smiles[: self.population_size]
+
         population = []
         failed = False
         for smi in sample:
@@ -181,10 +197,14 @@ class GA:
             ranks = rankdata(scores, method="ordinal")
             n = len(ranks)
             if self.selection_pressure:
-                fitness = np.array([
-                    2 - self.selection_pressure + (2 * (self.selection_pressure - 1) * (rank - 1) / (n - 1))
-                    for rank in ranks
-                ])
+                fitness = np.array(
+                    [
+                        2
+                        - self.selection_pressure
+                        + (2 * (self.selection_pressure - 1) * (rank - 1) / (n - 1))
+                        for rank in ranks
+                    ]
+                )
             else:
                 fitness = ranks / n
         else:
@@ -212,7 +232,9 @@ class GA:
             if rand > self.mutation_rate:
                 parent_A = np.random.choice(mating_pool)
                 parent_B = np.random.choice(mating_pool)
-                new_child = self.crossover.crossover(parent_A.rdkit_mol, parent_B.rdkit_mol)
+                new_child = self.crossover.crossover(
+                    parent_A.rdkit_mol, parent_B.rdkit_mol
+                )
                 if new_child != None:
                     idx = (generation, counter)
                     counter += 1
@@ -231,7 +253,9 @@ class GA:
                     new_population.append(mutated_child)
         return new_population
 
-    def sanitize(self, population: list[Individual], prune_population: bool) -> list[Individual]:
+    def sanitize(
+        self, population: list[Individual], prune_population: bool
+    ) -> list[Individual]:
         if prune_population:
             sanitized_population = []
             for ind in population:
@@ -244,7 +268,7 @@ class GA:
             key=lambda x: float("inf") if np.isnan(x.score) else x.score
         )  # np.nan is highest value, works for minimization of score
 
-        new_population = sanitized_population[:self.population_size]
+        new_population = sanitized_population[: self.population_size]
         return new_population  # selects individuals with lowest values
 
     def reweigh_scores_by_sa(
@@ -261,7 +285,9 @@ class GA:
         # return sa_scores, scores * sa_scores
         return sa_scores, scores
 
-    def print_results(self, population: list[Individual], fitness: npt.ArrayLike, generation: int):
+    def print_results(
+        self, population: list[Individual], fitness: npt.ArrayLike, generation: int
+    ):
         print(f"\nGeneration {generation+1}", flush=True)
         print(
             tabulate(
@@ -352,12 +378,12 @@ class GA:
                 ind.structure = structure
 
             print(f"Sanitizing..")
-            population = self.sanitize(
-                population + new_population, prune_population
-            )
+            population = self.sanitize(population + new_population, prune_population)
 
             print(f"Calculating fitness..")
-            fitness = self.calculate_fitness(np.array([ind.score for ind in population]))
+            fitness = self.calculate_fitness(
+                np.array([ind.score for ind in population])
+            )
             fitness = self.calculate_normalized_fitness(fitness)
 
             generations_list.append([ind.idx for ind in population])
@@ -366,8 +392,10 @@ class GA:
         with open(str(generations_file.resolve()), "w+") as f:
             f.writelines(str(generations_list))
 
+
 def test_scoring(molecule: Chem.Mol, idx: int) -> Tuple[int, int]:
-    return 1/float(molecule.GetNumHeavyAtoms()), idx
+    return 1 / float(molecule.GetNumHeavyAtoms()), idx
+
 
 if __name__ == "__main__":
     package_directory = Path(__file__).parent.resolve()
@@ -378,7 +406,9 @@ if __name__ == "__main__":
     generations = 32
     mating_pool_size = population_size
     mutation_rate = 0.50
-    seed_population = np.load("../../generate_molecules/gdb13/carbon_smiles.npz")["arr_0"]
+    seed_population = np.load("../../generate_molecules/gdb13/carbon_smiles.npz")[
+        "arr_0"
+    ]
     # seed_population = np.genfromtxt("../../generate_molecules/gdb13/7.smi", dtype="str")
     # seed_population = np.genfromtxt("./ZINC_amines.smi", dtype="str", autostrip=True)
     # with open("./ZINC_amines.smi") as fin:

@@ -1,6 +1,7 @@
 """
 Written by Jan H. Jensen 2018
 """
+
 import random
 from typing import Optional, Tuple
 
@@ -45,7 +46,9 @@ class Crossover:
         )
         bs = [mol.GetBondBetweenAtoms(bis[0], bis[1]).GetIdx()]
 
-        fragments_mol = Chem.FragmentOnBonds(mol, bs, addDummies=True, dummyLabels=[(1, 1)])
+        fragments_mol = Chem.FragmentOnBonds(
+            mol, bs, addDummies=True, dummyLabels=[(1, 1)]
+        )
 
         try:
             fragments = Chem.GetMolFrags(fragments_mol, asMols=True)
@@ -66,13 +69,15 @@ class Crossover:
         [R]@[R;!D2]@[R] matches a chain of three atoms where the middle atom does NOT have 2 further connections
 
         I guess this is two distinct ways of generating fragments. see Fig. 1e in the original publication
-        DOI https://doi.org/10.1039/C8SC05372C 
+        DOI https://doi.org/10.1039/C8SC05372C
         """
         for _ in range(10):
             if np.random.random() < 0.5:
                 if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]@[R]@[R]@[R]")):
                     return None
-                bis = random.choice(mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R]@[R]@[R]")))
+                bis = random.choice(
+                    mol.GetSubstructMatches(Chem.MolFromSmarts("[R]@[R]@[R]@[R]"))
+                )
                 bis = (
                     (bis[0], bis[1]),
                     (bis[2], bis[3]),
@@ -116,7 +121,9 @@ class Crossover:
         max_cycle_length = max([len(j) for j in cycle_list])
         macro_cycle = max_cycle_length > 6
 
-        double_bond_in_small_ring = mol.HasSubstructMatch(Chem.MolFromSmarts("[r3,r4]=[r3,r4]"))
+        double_bond_in_small_ring = mol.HasSubstructMatch(
+            Chem.MolFromSmarts("[r3,r4]=[r3,r4]")
+        )
 
         return not ring_allene and not macro_cycle and not double_bond_in_small_ring
 
@@ -130,7 +137,9 @@ class Crossover:
                 return None
             if not self.mol_is_sane(mol):
                 return False
-            target_size = self.size_stdev * np.random.randn() + self.average_size  # parameters set in GA_mol
+            target_size = (
+                self.size_stdev * np.random.randn() + self.average_size
+            )  # parameters set in GA_mol
             target_nrb = 2 * np.random.randn() + 5
             if target_nrb < 5:
                 target_nrb = 5
@@ -157,7 +166,9 @@ class Crossover:
 
     def crossover_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol):
         ring_smarts = Chem.MolFromSmarts("[R]")
-        if not parent_A.HasSubstructMatch(ring_smarts) and not parent_B.HasSubstructMatch(ring_smarts):
+        if not parent_A.HasSubstructMatch(
+            ring_smarts
+        ) and not parent_B.HasSubstructMatch(ring_smarts):
             return None
 
         rxn_smarts1 = [
@@ -226,9 +237,7 @@ class Crossover:
 
         return None
 
-    def crossover(
-        self, parent_A: Chem.Mol, parent_B: Chem.Mol
-    ) -> Optional[Chem.Mol]:
+    def crossover(self, parent_A: Chem.Mol, parent_B: Chem.Mol) -> Optional[Chem.Mol]:
         parent_smiles = [Chem.MolToSmiles(parent_A), Chem.MolToSmiles(parent_B)]
         try:
             Chem.Kekulize(parent_A, clearAromaticFlags=True)
