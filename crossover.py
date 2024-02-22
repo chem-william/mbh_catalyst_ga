@@ -15,11 +15,12 @@ rdBase.DisableLog("rdApp.error")
 
 class Crossover:
     def __init__(
-        self, average_size: float, size_stdev: float, molecule_filter: list[Chem.Mol]
+        self, average_size: float, size_stdev: float, molecule_filter: list[Chem.Mol], tagger_atom: str
     ) -> None:
         self.average_size = average_size
         self.size_stdev = size_stdev
         self.molecule_filter = molecule_filter
+        self.tagger_atom = tagger_atom
 
     def cut(self, mol: Chem.Mol) -> Optional[Tuple[Chem.Mol]]:
         """
@@ -28,6 +29,8 @@ class Crossover:
         The SMARTS pattern "[*]-;!@[*]" identifies single bonds between any two atoms that are not in a ring.
         If such a bond is found, the molecule is split at this location, and the resulting fragments are returned
         as molecules with dummy atoms added where the cuts were made.
+
+        "[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]" identifies single bonds between any two atoms that are not in a ring AND not {self.tagger_atom}
 
         Parameters:
         - mol (Chem.Mol): The input molecule to be cut.
@@ -39,10 +42,11 @@ class Crossover:
         Note:
         - Randomly selects among multiple possible cut sites if more than one is found.
         """
-        if not mol.HasSubstructMatch(Chem.MolFromSmarts("[*]-;!@[*]")):
+        if not mol.HasSubstructMatch(Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]")):
             return None
+        
         bis = random.choice(
-            mol.GetSubstructMatches(Chem.MolFromSmarts("[*]-;!@[*]"))
+            mol.GetSubstructMatches(Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]"))
         )
         bs = [mol.GetBondBetweenAtoms(bis[0], bis[1]).GetIdx()]
 
@@ -68,7 +72,7 @@ class Crossover:
 
         [R]@[R;!D2]@[R] matches a chain of three atoms where the middle atom does NOT have 2 further connections
 
-        I guess this is two distinct ways of generating fragments. see Fig. 1e in the original publication
+        I guess it's two distinct ways of generating fragments. see Fig. 1e in original publication
         DOI https://doi.org/10.1039/C8SC05372C
         """
         for _ in range(10):
@@ -111,7 +115,7 @@ class Crossover:
 
         return None
 
-    def ring_OK(self, mol):
+    def ring_OK(self, mol: Chem.Mol) -> bool:
         if not mol.HasSubstructMatch(Chem.MolFromSmarts("[R]")):
             return True
 
@@ -154,7 +158,7 @@ class Crossover:
         except:
             return False
 
-    def mol_is_sane(self, mol) -> bool:
+    def mol_is_sane(self, mol: Chem.Mol) -> bool:
         if self.molecule_filter is None:
             return True
 
@@ -213,7 +217,7 @@ class Crossover:
 
         return None
 
-    def crossover_non_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol):
+    def crossover_non_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol) -> Optional[Chem.Mol]:
         for _ in range(10):
             fragments_A = self.cut(parent_A)
             fragments_B = self.cut(parent_B)
@@ -266,10 +270,6 @@ if __name__ == "__main__":
 
     mol1 = Chem.MolFromSmiles(smiles1)
     mol2 = Chem.MolFromSmiles(smiles2)
-
-    child = Crossover.crossover(mol1, mol2)
-    mutation_rate = 1.0
-    # mutated_child = mutate(child,mutation_rate)
 
     for i in range(100):
         child = Crossover.crossover(mol1, mol2)

@@ -62,8 +62,6 @@ class GA:
         self.selection_pressure = selection_pressure
         self.path = path
 
-        self.tagger_mol = "Se"
-
     def slurm_scoring(
         self,
         sc_function,
@@ -121,7 +119,7 @@ class GA:
             print(e)
             return handle(e)
 
-    def _try_attach(self, molecule: Chem.Mol, max_tries: int) -> Optional[str]:
+    def _try_attach(self, molecule: Chem.Mol) -> Optional[str]:
         """
         tries to attach MARKER_ATOM to Cs that has an explicit valence below 4.
         selects positions randomly, but will only try for `max_tries`
@@ -145,7 +143,7 @@ class GA:
             usable_carbon_indices, size=2, replace=False
         )
         for electrode_index in electrode_indices:
-            tag = modifiable.AddAtom(Chem.Atom(self.tagger_mol))
+            tag = modifiable.AddAtom(Chem.Atom(self.crossover.tagger_atom))
             modifiable.AddBond(tag, int(electrode_index), Chem.BondType.SINGLE)
 
         generated_smiles = Chem.MolToSmiles(modifiable)
@@ -166,7 +164,7 @@ class GA:
         for smi in sample:
             mol_obj = Chem.MolFromSmiles(smi)
             if mol_obj is not None:
-                linked_mol_smiles = self._try_attach(mol_obj, max_tries=5)
+                linked_mol_smiles = self._try_attach(mol_obj)
                 linked_mol_obj = Chem.MolFromSmiles(linked_mol_smiles)
                 if linked_mol_obj is not None:
                     population.append(linked_mol_obj)
@@ -420,7 +418,7 @@ if __name__ == "__main__":
     molecule_filters = filters.get_molecule_filters(
         ["MBH"], package_directory / "filters/alert_collection.csv"
     )
-    co = Crossover(average_size=8.0, size_stdev=4.0, molecule_filter=molecule_filters)
+    co = Crossover(average_size=8.0, size_stdev=6.0, molecule_filter=molecule_filters, tagger_atom="Se")
 
     ga = GA(
         crossover=co,
