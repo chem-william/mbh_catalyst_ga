@@ -23,8 +23,8 @@ class DeleteAtomChoices(Enum):
 def delete_atom(co: Crossover) -> RxnSMARTS:
     p = [0.25, 0.25, 0.25, 0.1875, 0.0625]
 
-    randomly_chosen = np.random.choice(list(DeleteAtomChoices), p=p)
-    return randomly_chosen.value.replace("X", co.tagger_atom)
+    delete_action = np.random.choice(list(DeleteAtomChoices), p=p)
+    return delete_action.value.replace("X", co.tagger_atom)
 
 
 def append_atom() -> RxnSMARTS:
