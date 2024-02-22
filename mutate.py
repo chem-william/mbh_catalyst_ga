@@ -2,9 +2,7 @@
 Written by Jan H. Jensen 2018
 """
 
-import random
-from typing import List
-
+from enum import Enum
 import numpy as np
 from rdkit import Chem, rdBase
 from rdkit.Chem import AllChem
@@ -15,18 +13,18 @@ rdBase.DisableLog("rdApp.error")
 
 RxnSMARTS = str
 
+class DeleteAtomChoices(Enum):
+    a = "[!X:1]~[D1;!X]>>[*:1]"
+    b = "[*:1]~[D2]~[*:2]>>[*:1]-[*:2]"
+    c = "[*:1]~[D3](~[*;!H0:2])~[*:3]>>[*:1]-[*:2]-[*:3]"
+    d = "[*:1]~[D4](~[!X;!H0:2])(~[!X;!H0:3])~[*:4]>>[*:1]-[*:2]-[*:3]-[*:4]"
+    e = "[*:1]~[D4](~[*;!H0;!H1:2])(~[*:3])~[*:4]>>[*:1]-[*:2](-[*:3])-[*:4]"
 
-def delete_atom() -> RxnSMARTS:
-    choices = [
-        "[*:1]~[D1]>>[*:1]",
-        "[*:1]~[D2]~[*:2]>>[*:1]-[*:2]",
-        "[*:1]~[D3](~[*;!H0:2])~[*:3]>>[*:1]-[*:2]-[*:3]",
-        "[*:1]~[D4](~[*;!H0:2])(~[*;!H0:3])~[*:4]>>[*:1]-[*:2]-[*:3]-[*:4]",
-        "[*:1]~[D4](~[*;!H0;!H1:2])(~[*:3])~[*:4]>>[*:1]-[*:2](-[*:3])-[*:4]",
-    ]
+def delete_atom(co: Crossover) -> RxnSMARTS:
     p = [0.25, 0.25, 0.25, 0.1875, 0.0625]
 
-    return np.random.choice(choices, p=p)
+    randomly_chosen = np.random.choice(list(DeleteAtomChoices), p=p)
+    return randomly_chosen.value.replace("X", co.tagger_atom)
 
 
 def append_atom() -> RxnSMARTS:
@@ -133,7 +131,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
             change_bond_order(),
             delete_cyclic_bond(),
             add_ring(),
-            delete_atom(),
+            delete_atom(co),
             change_atom(mol),
             append_atom(),
         ]

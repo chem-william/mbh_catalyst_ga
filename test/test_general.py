@@ -1,4 +1,5 @@
 from rdkit import Chem
+from rdkit.Chem import AllChem
 import numpy as np
 import pytest
 
@@ -7,6 +8,9 @@ from ..GA_catalyst import GA
 
 from crossover import Crossover
 import filters
+
+
+TAGGER_ATOM = "Se"
 
 
 def is_linkers_ok(molecule: Chem.Mol, ga: GA) -> bool:
@@ -28,7 +32,7 @@ def general_crossover_fixture():
         average_size=8.0,
         size_stdev=4.0,
         molecule_filter=molecule_filters,
-        tagger_atom="Se",
+        tagger_atom=TAGGER_ATOM,
     )
     return co
 
@@ -161,3 +165,167 @@ def test_crossover(smiles_population, general_ga_fixture, general_crossover_fixt
                 correct_molecules += 1
     assert correct_molecules > inner_tries
     assert False
+
+
+def mutate(mol: Chem.Mol, rxn_smarts: str, co: Crossover) -> list[Chem.Mol]:
+    rxn = AllChem.ReactionFromSmarts(rxn_smarts)
+
+    new_mol_trial = rxn.RunReactants((mol,))
+
+    new_mols = []
+    for m in new_mol_trial:
+        m = m[0]
+        new_mols.append(m)
+
+    return new_mols
+
+
+def compare_smiles(smiles1, smiles2):
+    mol1 = Chem.MolFromSmiles(smiles1)
+    mol2 = Chem.MolFromSmiles(smiles2)
+
+    # Generate the canonical SMILES strings for both molecules
+    canonical_smiles1 = Chem.MolToSmiles(mol1)
+    canonical_smiles2 = Chem.MolToSmiles(mol2)
+
+    return canonical_smiles1 == canonical_smiles2
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_result",
+    [
+        ("CCC", "CC"),
+        (f"[{TAGGER_ATOM}]CCC", f"[{TAGGER_ATOM}]CC"),
+    ],
+)
+def test_delete_atom_a(general_crossover_fixture, smiles, expected_result):
+    from mutate import DeleteAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    reaction = mutate(mol, DeleteAtomChoices.a.value.replace("X", co.tagger_atom), co)
+    assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_result",
+    [
+        ("CCCC", "CCC"),
+        ("CC1([SeH])NC(C)([SeH])C1(C)", "CC1C(C)([SeH])C1(C)[SeH]"),
+    ],
+)
+def test_delete_atom_b(general_crossover_fixture, smiles, expected_result):
+    from mutate import DeleteAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    reaction = mutate(mol, DeleteAtomChoices.b.value.replace("X", co.tagger_atom), co)
+    assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_result",
+    [
+        ("CC1([SeH])NC(C)([SeH])C1(N)", "CC1([SeH])NC(C)([SeH])N1"),
+    ],
+)
+def test_delete_atom_c(general_crossover_fixture, smiles, expected_result):
+    from mutate import DeleteAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    reaction = mutate(mol, DeleteAtomChoices.c.value.replace("X", co.tagger_atom), co)
+    assert compare_smiles(Chem.MolToSmiles(reaction[0]), expected_result)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])NC(C)([SeH])C1(N)",
+            [
+                "CN1C(C)([SeH])C1(N)[SeH]",
+                "CC1(N)N([SeH])C1(C)[SeH]",
+                "CC1([SeH])C(N)N1C[SeH]",
+                "CC1([SeH])NC1(N)C[SeH]",
+                "CC1([SeH])C(N)CN1[SeH]",
+                "CC1(N)N([SeH])C1(C)[SeH]",
+                "CC1([SeH])NCC1(N)[SeH]",
+                "CN1C(C)([SeH])C1(N)[SeH]",
+                "CC1([SeH])NCC1(N)[SeH]",
+                "CC1([SeH])NC1(N)C[SeH]",
+                "CC1([SeH])NCC1(N)[SeH]",
+                "CC1([SeH])NC1(N)C[SeH]",
+                "CN1C(C)([SeH])C1(N)[SeH]",
+                "CC1(N)N([SeH])C1(C)[SeH]",
+                "CC1([SeH])C(N)CN1[SeH]",
+                "CC1(N)N([SeH])C1(C)[SeH]",
+                "CC1([SeH])C(N)N1C[SeH]",
+                "CC1([SeH])NC1(N)C[SeH]",
+                "CN1C(C)([SeH])C1(N)[SeH]",
+                "CC1([SeH])NCC1(N)[SeH]",
+                "CC1([SeH])C(N)N1C[SeH]",
+                "CC1([SeH])C(N)CN1[SeH]",
+                "CC1([SeH])C(N)CN1[SeH]",
+                "CC1([SeH])C(N)N1C[SeH]",
+            ],
+        ),
+    ],
+)
+def test_delete_atom_d(general_crossover_fixture, smiles, expected_results):
+    from mutate import DeleteAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    reaction = mutate(mol, DeleteAtomChoices.d.value.replace("X", co.tagger_atom), co)
+    for reac, expected in zip(reaction, expected_results):
+        assert compare_smiles(Chem.MolToSmiles(reac), expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])N=CCC1(C)CC1CCC1",
+            [
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1([SeH])N=CCC1CC1CCC1",
+                "CC1([SeH])N=CCC1CC1CCC1",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1([SeH])N=CCC1CC1CCC1",
+                "CC1([SeH])N=CCC1CC1CCC1",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1(CC2CCC2)CC=NC1[SeH]",
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1([SeH])N=CCC1(C)C1CCC1",
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1(CC2CCC2)C=NC1(C)[SeH]",
+                "CC1([SeH])N=CCC1CC1CCC1",
+                "CC1([SeH])N=CCC1CC1CCC1",
+            ],
+        ),
+    ],
+)
+def test_delete_atom_e(general_crossover_fixture, smiles, expected_results):
+    from mutate import DeleteAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    reaction = mutate(mol, DeleteAtomChoices.e.value.replace("X", co.tagger_atom), co)
+    for reac, expected in zip(reaction, expected_results):
+        assert compare_smiles(Chem.MolToSmiles(reac), expected)
