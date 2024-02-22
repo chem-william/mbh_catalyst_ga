@@ -59,6 +59,8 @@ class GA:
         self.selection_pressure = selection_pressure
         self.molecule_filters = molecule_filters
         self.path = path
+
+        self.tagger_mol = "Se"
     
     def slurm_scoring(self, sc_function, population, ids, cpus_per_task: int = 4, cleanup: bool = False):
         """Evaluates a scoring function for population on SLURM cluster
@@ -107,6 +109,37 @@ class GA:
         except Exception as e:
             print(e)
             return handle(e)
+
+    def _try_attach(self, molecule: Chem.Mol, max_tries: int) -> Optional[str]:
+        """
+        tries to attach MARKER_ATOM to Cs that has an explicit valence below 4.
+        selects positions randomly, but will only try for `max_tries`
+        for each molecule as some molecules does not have
+        2 Cs with explicit valence < 4.
+        """
+        atoms = molecule.GetAtoms()
+
+        # first we check whether there is two Cs with explicit valence < 4.
+        # if not, we need to skip this molecule
+        usable_carbon_indices = []
+        for idx, atom in enumerate(atoms):
+            if atom.GetSymbol() == "C" and atom.GetExplicitValence() < 4:
+                usable_carbon_indices.append(idx)
+
+        if len(usable_carbon_indices) < 2:
+            return None
+
+        modifiable = Chem.RWMol(molecule)
+        electrode_indices = np.random.choice(usable_carbon_indices, size=2, replace=False)
+        for electrode_index in electrode_indices:
+            tag = modifiable.AddAtom(Chem.Atom(self.tagger_mol))
+            modifiable.AddBond(tag, int(electrode_index), Chem.BondType.SINGLE)
+
+        generated_smiles = Chem.MolToSmiles(modifiable)
+        if Chem.MolFromSmiles(generated_smiles) is None:
+            return None
+        return generated_smiles
+
 
     def make_initial_population(self, smiles: list[str], randomize: bool = True) -> list[Chem.Mol]:
         if randomize:
