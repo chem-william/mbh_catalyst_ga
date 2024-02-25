@@ -395,15 +395,15 @@ class GA:
 
 def test_scoring(molecule: Chem.Mol, idx: int) -> Tuple[float, int]:
     return 1 / float(molecule.GetNumHeavyAtoms()), idx
+    # return float(molecule.GetNumHeavyAtoms()), idx
 
 
 if __name__ == "__main__":
     package_directory = Path(__file__).parent.resolve()
 
-    population_size = 12
-    # file_name = package_directory / "ZINC_amines.smi"
+    population_size = 20
     scoring_function = test_scoring
-    generations = 32
+    generations = 20
     mating_pool_size = population_size
     mutation_rate = 0.50
     seed_population = np.load("../../generate_molecules/gdb13/carbon_smiles.npz")[
@@ -415,7 +415,7 @@ if __name__ == "__main__":
     #     seed_population = [smiles for smiles in fin]
 
     prune_population = True
-    random_seed = 42
+    random_seed = 46
     minimization = True
     selection_method = "rank"
     selection_pressure = 1.5

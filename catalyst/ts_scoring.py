@@ -28,7 +28,7 @@ def ts_scoring(
 
     Args:
         cat (rdkit.Mol): Molecule containing one tertiary amine
-        n_confs (int, optional): Nubmer of confomers used for embedding. Defaults to 10.
+        n_confs (int, optional): Number of conformers used for embedding. Defaults to 10.
         cleanup (bool, optional): Clean up files after calculation.
                                   Defaults to False, needs to be False to work with submitit.
 
