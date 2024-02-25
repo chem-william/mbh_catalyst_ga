@@ -48,32 +48,24 @@ def append_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
 
     return rxn_smarts
 
+class InsertAtomChoices(Enum):
+    SINGLE = "[*:1]~[*:2]>>[*:1]X[*:2]"
+    DOUBLE = "[*;!H0:1]~[*:2]>>[*:1]=X-[*:2]"
+    TRIPLE = "[*;!R;!H1;!H0:1]~[*:2]>>[*:1]#X-[*:2]"
+def insert_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
+    insert_action = np.random.choice(list(InsertAtomChoices), p=p_BO)
 
-def insert_atom(crossover: Crossover) -> RxnSMARTS:
-    choices = [
-        ["single", ["C", "N", "O", "S"], 4 * [1.0 / 4.0]],
-        ["double", ["C", "N"], 2 * [1.0 / 2.0]],
-        ["triple", ["C"], [1.0]],
-    ]
-    p_BO = [0.60, 0.35, 0.05]
+    if insert_action == InsertAtomChoices.SINGLE:
+        new_atom = np.random.choice(["C", "N", "O", "S"])
+        rxn_smarts = "[*:1]~[*:2]>>[*:1]X[*:2]".replace("X", new_atom)
+        rxn_smarts = rxn_smarts.replace("TAG", crossover.tagger_atom)
 
-    index = np.random.choice(list(range(3)), p=p_BO)
-
-    BO, atom_list, p = choices[index]
-    new_atom = np.random.choice(atom_list, p=p)
-
-    if BO == "single":
-        # tagger_atom might be capped with H. therefore, we only need to check
-        # for the single bond case
-        rxn_smarts = (
-            f"[!{crossover.tagger_atom}:1]~[!{crossover.tagger_atom}:2]"
-            + ">>"
-            + f"[!{crossover.tagger_atom}:1]X[!{crossover.tagger_atom}:2]"
-            .replace("X", new_atom)
-        )
-    if BO == "double":
+    if insert_action == InsertAtomChoices.DOUBLE:
+        new_atom = np.random.choice(["C", "N"])
         rxn_smarts = "[*;!H0:1]~[*:2]>>[*:1]=X-[*:2]".replace("X", new_atom)
-    if BO == "triple":
+
+    if insert_action == InsertAtomChoices.TRIPLE:
+        new_atom = "C"
         rxn_smarts = "[*;!R;!H1;!H0:1]~[*:2]>>[*:1]#X-[*:2]".replace("X", new_atom)
 
     return rxn_smarts
@@ -126,7 +118,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
     p = [0.15, 0.14, 0.14, 0.14, 0.14, 0.14, 0.15]
     for _ in range(10):
         rxn_smarts_list = [
-            insert_atom(co),
+            insert_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),
             change_bond_order(),
             delete_cyclic_bond(),
             add_ring(),

@@ -411,3 +411,82 @@ def test_append_atom_triple(general_crossover_fixture, smiles, expected_results)
     for reac, expected in zip(reaction, expected_results):
         s = Chem.MolToSmiles(reac)
         assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])NC(C)([SeH])C1(N)",
+            [
+                "CCC1([SeH])NC(C)([SeH])C1N",
+                "CCC1([SeH])NC(C)([SeH])C1N",
+                "CC1([SeH])NC(C)(C[SeH])C1N",
+                "CC1([SeH])CNC(C)([SeH])C1N",
+                "CC1([SeH])CC(N)C(C)([SeH])N1",
+            ],
+        ),
+    ],
+)
+def test_insert_atom_single(general_crossover_fixture, smiles, expected_results):
+    from mutate import InsertAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = InsertAtomChoices.SINGLE.value.replace("X", DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])N=CCC1C1CCC1",
+            [
+                "C=CC1([SeH])N=CCC1C1CCC1",
+            ],
+        ),
+    ],
+)
+def test_insert_atom_double(general_crossover_fixture, smiles, expected_results):
+    from mutate import InsertAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = InsertAtomChoices.DOUBLE.value.replace("X", DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "CC1([SeH])N=CCC1C1CCC1",
+            [
+                "C#CC1([SeH])N=CCC1C1CCC1",
+            ],
+        ),
+    ],
+)
+def test_insert_atom_triple(general_crossover_fixture, smiles, expected_results):
+    from mutate import InsertAtomChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = InsertAtomChoices.TRIPLE.value.replace("X", DUMMY_ATOM)
+    rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
