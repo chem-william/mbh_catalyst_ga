@@ -50,7 +50,7 @@ def append_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
 
 class InsertAtomChoices(Enum):
     SINGLE = "[*:1]~[*:2]>>[*:1]X[*:2]"
-    DOUBLE = "[*;!H0:1]~[*:2]>>[*:1]=X-[*:2]"
+    DOUBLE = "[!TAG;!H0:1]~[*:2]>>[*:1]=X-[*:2]"
     TRIPLE = "[*;!R;!H1;!H0:1]~[*:2]>>[*:1]#X-[*:2]"
 def insert_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
     insert_action = np.random.choice(list(InsertAtomChoices), p=p_BO)
