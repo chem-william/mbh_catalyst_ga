@@ -133,7 +133,7 @@ class Crossover:
 
     def mol_OK(self, mol: Chem.Mol) -> bool:
         if not self.size_stdev or not self.average_size:
-            print("size parameters are not defined")
+            raise ValueError("size parameters are not defined")
         try:
             Chem.SanitizeMol(mol)
             test_mol = Chem.MolFromSmiles(Chem.MolToSmiles(mol))
