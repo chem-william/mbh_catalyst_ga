@@ -178,11 +178,15 @@ class GA:
 
         return population
 
-    def calculate_normalized_fitness(self, scores: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    def calculate_normalized_fitness(
+        self, scores: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
         normalized_fitness = scores / np.sum(scores)
         return normalized_fitness
 
-    def calculate_fitness(self, scores: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    def calculate_fitness(
+        self, scores: npt.NDArray[np.float64]
+    ) -> npt.NDArray[np.float64]:
         if self.minimization:
             scores *= -1.0
 
@@ -418,7 +422,12 @@ if __name__ == "__main__":
     molecule_filters = filters.get_molecule_filters(
         ["electrodes"], package_directory / "filters/alert_collection.csv"
     )
-    co = Crossover(average_size=8.0, size_stdev=4.0, molecule_filter=molecule_filters, tagger_atom="Se")
+    co = Crossover(
+        average_size=8.0,
+        size_stdev=4.0,
+        molecule_filter=molecule_filters,
+        tagger_atom="Se",
+    )
 
     ga = GA(
         crossover=co,

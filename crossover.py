@@ -15,7 +15,11 @@ rdBase.DisableLog("rdApp.error")
 
 class Crossover:
     def __init__(
-        self, average_size: float, size_stdev: float, molecule_filter: list[Chem.Mol], tagger_atom: str
+        self,
+        average_size: float,
+        size_stdev: float,
+        molecule_filter: list[Chem.Mol],
+        tagger_atom: str,
     ) -> None:
         self.average_size = average_size
         self.size_stdev = size_stdev
@@ -42,11 +46,15 @@ class Crossover:
         Note:
         - Randomly selects among multiple possible cut sites if more than one is found.
         """
-        if not mol.HasSubstructMatch(Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]")):
+        if not mol.HasSubstructMatch(
+            Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]")
+        ):
             return None
-        
+
         bis = random.choice(
-            mol.GetSubstructMatches(Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]"))
+            mol.GetSubstructMatches(
+                Chem.MolFromSmarts(f"[!{self.tagger_atom}]-;!@[!{self.tagger_atom}]")
+            )
         )
         bs = [mol.GetBondBetweenAtoms(bis[0], bis[1]).GetIdx()]
 
@@ -225,7 +233,9 @@ class Crossover:
 
         return None
 
-    def crossover_non_ring(self, parent_A: Chem.Mol, parent_B: Chem.Mol) -> Optional[Chem.Mol]:
+    def crossover_non_ring(
+        self, parent_A: Chem.Mol, parent_B: Chem.Mol
+    ) -> Optional[Chem.Mol]:
         for _ in range(10):
             fragments_A = self.cut(parent_A)
             fragments_B = self.cut(parent_B)

@@ -104,7 +104,9 @@ class AddRingChoices(Enum):
 
 
 def add_ring(p: list[float], crossover: Crossover) -> RxnSMARTS:
-    return np.random.choice(list(AddRingChoices), p=p).value.replace("TAG", crossover.tagger_atom)
+    return np.random.choice(list(AddRingChoices), p=p).value.replace(
+        "TAG", crossover.tagger_atom
+    )
 
 
 class ChangeAtomChoices(Enum):
