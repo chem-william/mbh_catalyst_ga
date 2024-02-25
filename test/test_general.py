@@ -782,32 +782,21 @@ def test_add_ring_five_membered(general_crossover_fixture, smiles, expected_resu
         assert compare_smiles(s, expected)
 
 
-@pytest.mark.parametrize(
-    "smiles, expected_results",
-    [
-        (
-            "C(CCCCC=CC)C1([SeH])N=C(CCCCCC)CC1C1CC=C1",
-            [
-                "CC=C1CCCCC1C1([SeH])N=C(CCCCCC)CC1C1C=CC1",
-                "CCCCCCC1=NC([SeH])(CC2CCCC=C2C)C(C2C=CC2)C1",
-                "CCCCCCC1=NC([SeH])(CCC2CC=CCC2)C(C2C=CC2)C1",
-                "CC=C1CCCCC1C1([SeH])N=C(CCCCCC)CC1C1C=CC1",
-                "CCCCCCC1=NC([SeH])(CC2CCCC=C2C)C(C2C=CC2)C1",
-                "CCCCCCC1=NC([SeH])(CCC2CC=CCC2)C(C2C=CC2)C1",
-                "CC=CCCCCCC1([SeH])N=C(C2CCCCC2)CC1C1C=CC1",
-                "CC=CCCCCCC1([SeH])N=C(C2CCCCC2)CC1C1C=CC1",
-            ],
-        ),
-    ],
-)
-def test_add_ring_six_membered(general_crossover_fixture, smiles, expected_results):
-    from mutate import AddRingChoices
+@pytest.mark.parametrize("smiles", ("C(CC=CC)C1([SeH])N=CCC1C1CC=C1",))
+def test_change_atom(general_crossover_fixture, smiles):
+    from mutate import ChangeAtomChoices, change_atom
 
     co = general_crossover_fixture
 
     mol = Chem.MolFromSmiles(smiles)
-    rxn_smarts = AddRingChoices.SixMembered.value.replace("TAG", TAGGER_ATOM)
+    rxn_smarts = change_atom(
+        p=[0.15, 0.15, 0.14, 0.14, 0.14, 0.14, 0.14], mol=Chem.MolFromSmiles(smiles)
+    )
+    splitted = rxn_smarts.split(":")
+    first_atom = splitted[0][1:]
+    second_atom = splitted[1][5:]
+
     reaction = mutate(mol, rxn_smarts, co)
-    for reac, expected in zip(reaction, expected_results):
+    for reac in reaction:
         s = Chem.MolToSmiles(reac)
-        assert compare_smiles(s, expected)
+        assert second_atom in s

@@ -13,6 +13,7 @@ rdBase.DisableLog("rdApp.error")
 
 RxnSMARTS = str
 
+
 class DeleteAtomChoices(Enum):
     a = "[!TAG:1]~[D1;!TAG]>>[*:1]"
     b = "[*:1]~[D2]~[*:2]>>[*:1]-[*:2]"
@@ -20,16 +21,20 @@ class DeleteAtomChoices(Enum):
     d = "[*:1]~[D4](~[!TAG;!H0:2])(~[!TAG;!H0:3])~[*:4]>>[*:1]-[*:2]-[*:3]-[*:4]"
     e = "[*:1]~[D4](~[*;!H0;!H1:2])(~[*:3])~[*:4]>>[*:1]-[*:2](-[*:3])-[*:4]"
 
+
 def delete_atom(co: Crossover) -> RxnSMARTS:
     p = [0.25, 0.25, 0.25, 0.1875, 0.0625]
 
     delete_action = np.random.choice(list(DeleteAtomChoices), p=p)
     return delete_action.value.replace("TAG", co.tagger_atom)
 
+
 class AppendAtomChoices(Enum):
     SINGLE = "[!TAG;!H0:1]>>[*:1]X"
     DOUBLE = "[*;!H0;!H1:1]>>[*:1]X"
     TRIPLE = "[*;H3:1]>>[*:1]X"
+
+
 def append_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
     append_action = np.random.choice(list(AppendAtomChoices), p=p_BO)
 
@@ -48,10 +53,13 @@ def append_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
 
     return rxn_smarts
 
+
 class InsertAtomChoices(Enum):
     SINGLE = "[*:1]~[*:2]>>[*:1]X[*:2]"
     DOUBLE = "[!TAG;!H0:1]~[*:2]>>[*:1]=X-[*:2]"
     TRIPLE = "[*;!R;!H1;!H0:1]~[*:2]>>[*:1]#X-[*:2]"
+
+
 def insert_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
     insert_action = np.random.choice(list(InsertAtomChoices), p=p_BO)
 
@@ -70,38 +78,65 @@ def insert_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
 
     return rxn_smarts
 
+
 class ChangeBondOrderChoices(Enum):
     ToSingle = "[*:1]!-[*:2]>>[*:1]-[*:2]"
     FromSingleToDouble = "[*;!H0:1]-[*;!H0:2]>>[*:1]=[*:2]"
     FromTripleToDouble = "[*:1]#[*:2]>>[*:1]=[*:2]"
     ToTriple = "[*;!R;!H1;!H0:1]~[*;!R;!H1:2]>>[*:1]#[*:2]"
+
+
 def change_bond_order(p: list[float]) -> RxnSMARTS:
     return np.random.choice(list(ChangeBondOrderChoices), p=p)
+
 
 def delete_cyclic_bond() -> RxnSMARTS:
     return "[*:1]@[*:2]>>([*:1].[*:2])"
 
+
 class AddRingChoices(Enum):
     ThreeMembered = "[!TAG;!H0:1]~[*;!r:2]~[!TAG;!H0:3]>>[*:1]1~[*:2]~[*:3]1"
     FourMembered = "[!TAG;!H0:1]~[*!r:2]~[*!r:3]~[!TAG!H0:4]>>[*:1]1~[*:2]~[*:3]~[*:4]1"
-    FiveMembered = "[!TAG;!H0:1]~[*!r:2]~[*:3]~[*:4]~[!TAG;!H0:5]>>[*:1]1~[*:2]~[*:3]~[*:4]~[*:5]1"
+    FiveMembered = (
+        "[!TAG;!H0:1]~[*!r:2]~[*:3]~[*:4]~[!TAG;!H0:5]>>[*:1]1~[*:2]~[*:3]~[*:4]~[*:5]1"
+    )
     SixMembered = "[!TAG;!H0:1]~[*!r:2]~[*:3]~[*:4]~[*!r:5]~[!TAG;!H0:6]>>[*:1]1~[*:2]~[*:3]~[*:4]~[*:5]~[*:6]1"
+
+
 def add_ring(p: list[float]) -> RxnSMARTS:
     return np.random.choice(list(AddRingChoices), p=p)
 
 
-def change_atom(mol: Chem.Mol) -> RxnSMARTS:
-    choices = ["#6", "#7", "#8", "#9", "#16", "#17", "#35"]
-    p = [0.15, 0.15, 0.14, 0.14, 0.14, 0.14, 0.14]
+class ChangeAtomChoices(Enum):
+    C = "C"
+    N = "N"
+    O = "O"
+    F = "F"
+    S = "S"
+    Cl = "Cl"
+    Br = "Br"
 
-    X = np.random.choice(choices, p=p)
-    while not mol.HasSubstructMatch(Chem.MolFromSmarts("[" + X + "]")):
-        X = np.random.choice(choices, p=p)
-    Y = np.random.choice(choices, p=p)
+
+def change_atom(p: list[float], mol: Chem.Mol) -> RxnSMARTS:
+    """
+    tries to replace X with Y. if mol doesn't have the first randomly chosen
+    X, we'll pick another one
+
+    if X == Y, we'll pick another Y until X is different from Y
+
+    this function is a little funky as it can change a triple bonded C into any
+    of the other atoms. For example, into an O which is not really the best
+    """
+    X = np.random.choice(list(ChangeAtomChoices), p=p)
+
+    while not mol.HasSubstructMatch(Chem.MolFromSmarts("[" + X.value + "]")):
+        X = np.random.choice(list(ChangeAtomChoices), p=p)
+
+    Y = np.random.choice(list(ChangeAtomChoices), p=p)
     while Y == X:
-        Y = np.random.choice(choices, p=p)
+        Y = np.random.choice(list(ChangeAtomChoices), p=p)
 
-    return "[X:1]>>[Y:1]".replace("X", X).replace("Y", Y)
+    return "[X:1]>>[Y:1]".replace("X", X.value).replace("Y", Y.value)
 
 
 def mutate(mol: Chem.Mol, co: Crossover):
@@ -114,7 +149,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
             delete_cyclic_bond(),
             add_ring(p=[0.05, 0.05, 0.45, 0.45]),
             delete_atom(co),
-            change_atom(mol),
+            change_atom(p=[0.15, 0.15, 0.14, 0.14, 0.14, 0.14, 0.14], mol=mol),
             append_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),
         ]
         rxn_smarts = np.random.choice(rxn_smarts_list, p=p)
