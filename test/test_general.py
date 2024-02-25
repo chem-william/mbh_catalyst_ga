@@ -165,7 +165,6 @@ def test_crossover(smiles_population, general_ga_fixture, general_crossover_fixt
                 assert is_linkers_ok(child, general_ga_fixture)
                 correct_molecules += 1
     assert correct_molecules > inner_tries
-    assert False
 
 
 def mutate(mol: Chem.Mol, rxn_smarts: str, co: Crossover) -> list[Chem.Mol]:
