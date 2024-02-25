@@ -684,8 +684,130 @@ def test_delete_cyclic_bond(general_crossover_fixture, smiles, expected_results)
         s = Chem.MolToSmiles(reac)
         assert compare_smiles(s, expected)
 
-    # print(len(reaction))
-    # for r in reaction:
-    #     s = Chem.MolToSmiles(r)
-    #     print(s)
-    # assert False
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(=CCCC=CC)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "CC=CCC1C=C1C1([SeH])N=CCC1C1C=CC1",
+                "CC=CC1CC1=CC1([SeH])N=CCC1C1C=CC1",
+                "CC=CCC1C=C1C1([SeH])N=CCC1C1C=CC1",
+                "CC=C1CC1C=CC1([SeH])N=CCC1C1C=CC1",
+                "CC=CC1CC1=CC1([SeH])N=CCC1C1C=CC1",
+                "CC1=CC1CC=CC1([SeH])N=CCC1C1C=CC1",
+                "CC=C1CC1C=CC1([SeH])N=CCC1C1C=CC1",
+                "[SeH]C1(C=CCCC2=CC2)N=CCC1C1C=CC1",
+                "CC1=CC1CC=CC1([SeH])N=CCC1C1C=CC1",
+                "[SeH]C1(C=CCCC2=CC2)N=CCC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_add_ring_three_membered(general_crossover_fixture, smiles, expected_results):
+    from mutate import AddRingChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AddRingChoices.ThreeMembered.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(=CCCC=CC)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "CC=CC1CC=C1C1([SeH])N=CCC1C1C=CC1",
+                "CC=C1CCC1=CC1([SeH])N=CCC1C1C=CC1",
+                "CC1=CCC1C=CC1([SeH])N=CCC1C1C=CC1",
+                "CC=CC1CC=C1C1([SeH])N=CCC1C1C=CC1",
+                "[SeH]C1(C=CCC2C=CC2)N=CCC1C1C=CC1",
+                "CC=C1CCC1=CC1([SeH])N=CCC1C1C=CC1",
+                "CC1=CCC1C=CC1([SeH])N=CCC1C1C=CC1",
+                "[SeH]C1(C=CCC2C=CC2)N=CCC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_add_ring_four_membered(general_crossover_fixture, smiles, expected_results):
+    from mutate import AddRingChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AddRingChoices.FourMembered.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(=CCCC=CC)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "CC=C1CCC=C1C1([SeH])N=CCC1C1C=CC1",
+                "CC=CCCC1=CC2([SeH])N=C1CC2C1C=CC1",
+                "CC=CCCC1=CC2([SeH])N=CC1C2C1C=CC1",
+                "CC=CCCC1=CC2([SeH])N=CCC2C12C=CC2",
+                "CC1=CCCC1=CC1([SeH])N=CCC1C1C=CC1",
+                "CC=CCC1C=CC2([SeH])N=CCC12C1C=CC1",
+                "[SeH]C1(C=CC2CC=CC2)N=CCC1C1C=CC1",
+                "CC=C1CCC=C1C1([SeH])N=CCC1C1C=CC1",
+                "CC1=CCCC1=CC1([SeH])N=CCC1C1C=CC1",
+                "[SeH]C1(C=CC2CC=CC2)N=CCC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_add_ring_five_membered(general_crossover_fixture, smiles, expected_results):
+    from mutate import AddRingChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AddRingChoices.FiveMembered.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(CCCCC=CC)C1([SeH])N=C(CCCCCC)CC1C1CC=C1",
+            [
+                "CC=C1CCCCC1C1([SeH])N=C(CCCCCC)CC1C1C=CC1",
+                "CCCCCCC1=NC([SeH])(CC2CCCC=C2C)C(C2C=CC2)C1",
+                "CCCCCCC1=NC([SeH])(CCC2CC=CCC2)C(C2C=CC2)C1",
+                "CC=C1CCCCC1C1([SeH])N=C(CCCCCC)CC1C1C=CC1",
+                "CCCCCCC1=NC([SeH])(CC2CCCC=C2C)C(C2C=CC2)C1",
+                "CCCCCCC1=NC([SeH])(CCC2CC=CCC2)C(C2C=CC2)C1",
+                "CC=CCCCCCC1([SeH])N=C(C2CCCCC2)CC1C1C=CC1",
+                "CC=CCCCCCC1([SeH])N=C(C2CCCCC2)CC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_add_ring_six_membered(general_crossover_fixture, smiles, expected_results):
+    from mutate import AddRingChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = AddRingChoices.SixMembered.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
