@@ -70,17 +70,14 @@ def insert_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
 
     return rxn_smarts
 
+class ChangeBondOrderChoices(Enum):
+    ToSingle = "[*:1]!-[*:2]>>[*:1]-[*:2]"
+    FromSingleToDouble = "[*;!H0:1]-[*;!H0:2]>>[*:1]=[*:2]"
+    FromTripleToDouble = "[*:1]#[*:2]>>[*:1]=[*:2]"
+    ToTriple = "[*;!R;!H1;!H0:1]~[*;!R;!H1:2]>>[*:1]#[*:2]"
 
-def change_bond_order() -> RxnSMARTS:
-    choices = [
-        "[*:1]!-[*:2]>>[*:1]-[*:2]",
-        "[*;!H0:1]-[*;!H0:2]>>[*:1]=[*:2]",
-        "[*:1]#[*:2]>>[*:1]=[*:2]",
-        "[*;!R;!H1;!H0:1]~[*:2]>>[*:1]#[*:2]",
-    ]
-    p = [0.45, 0.45, 0.05, 0.05]
-
-    return np.random.choice(choices, p=p)
+def change_bond_order(p: list[float]) -> RxnSMARTS:
+    return np.random.choice(list(ChangeBondOrderChoices), p=p)
 
 
 def delete_cyclic_bond() -> RxnSMARTS:
@@ -119,7 +116,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
     for _ in range(10):
         rxn_smarts_list = [
             insert_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),
-            change_bond_order(),
+            change_bond_order(p=[0.45, 0.45, 0.05, 0.05]),
             delete_cyclic_bond(),
             add_ring(),
             delete_atom(co),

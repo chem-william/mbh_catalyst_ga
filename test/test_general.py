@@ -516,3 +516,129 @@ def test_insert_atom_triple(general_crossover_fixture, smiles, expected_results)
     for reac, expected in zip(reaction, expected_results):
         s = Chem.MolToSmiles(reac)
         assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(#C)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "CCC1([SeH])N=CCC1C1C=CC1",
+                "CCC1([SeH])N=CCC1C1C=CC1",
+                "C#CC1([SeH])NCCC1C1C=CC1",
+                "C#CC1([SeH])NCCC1C1C=CC1",
+                "C#CC1([SeH])N=CCC1C1CCC1",
+                "C#CC1([SeH])N=CCC1C1CCC1",
+            ],
+        ),
+    ],
+)
+def test_change_bond_order_tosingle(
+    general_crossover_fixture, smiles, expected_results
+):
+    from mutate import ChangeBondOrderChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = ChangeBondOrderChoices.ToSingle.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(#C)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "C#CC1([SeH])N=C=CC1C1C=CC1",
+                "C#CC1([SeH])N=C=CC1C1C=CC1",
+                "C#CC1([SeH])N=CC=C1C1C=CC1",
+                "C#CC1([SeH])N=CC=C1C1C=CC1",
+                "C#CC1([SeH])N=CCC1=C1C=CC1",
+                "C#CC1([SeH])N=CCC1=C1C=CC1",
+                "C#CC1([SeH])N=CCC1C1=CC=C1",
+                "C#CC1([SeH])N=CCC1C1=C=CC1",
+                "C#CC1([SeH])N=CCC1C1=CC=C1",
+                "C#CC1([SeH])N=CCC1C1C=C=C1",
+                "C#CC1([SeH])N=CCC1C1C=C=C1",
+                "C#CC1([SeH])N=CCC1C1=C=CC1",
+            ],
+        ),
+    ],
+)
+def test_change_bond_order_fromsingletodouble(
+    general_crossover_fixture, smiles, expected_results
+):
+    from mutate import ChangeBondOrderChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = ChangeBondOrderChoices.FromSingleToDouble.value.replace(
+        "TAG", TAGGER_ATOM
+    )
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(#C)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "C=CC1([SeH])N=CCC1C1C=CC1",
+                "C=CC1([SeH])N=CCC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_change_bond_order_fromtripletodouble(
+    general_crossover_fixture, smiles, expected_results
+):
+    from mutate import ChangeBondOrderChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = ChangeBondOrderChoices.FromTripleToDouble.value.replace(
+        "TAG", TAGGER_ATOM
+    )
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(=CCC)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "C#CC=CC1([SeH])N=CCC1C1C=CC1",
+                "C#CC=CC1([SeH])N=CCC1C1C=CC1",
+            ],
+        ),
+    ],
+)
+def test_change_bond_order_totriple(
+    general_crossover_fixture, smiles, expected_results
+):
+    from mutate import ChangeBondOrderChoices
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = ChangeBondOrderChoices.ToTriple.value.replace("TAG", TAGGER_ATOM)
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
