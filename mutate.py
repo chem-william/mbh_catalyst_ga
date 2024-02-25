@@ -75,10 +75,8 @@ class ChangeBondOrderChoices(Enum):
     FromSingleToDouble = "[*;!H0:1]-[*;!H0:2]>>[*:1]=[*:2]"
     FromTripleToDouble = "[*:1]#[*:2]>>[*:1]=[*:2]"
     ToTriple = "[*;!R;!H1;!H0:1]~[*;!R;!H1:2]>>[*:1]#[*:2]"
-
 def change_bond_order(p: list[float]) -> RxnSMARTS:
     return np.random.choice(list(ChangeBondOrderChoices), p=p)
-
 
 def delete_cyclic_bond() -> RxnSMARTS:
     return "[*:1]@[*:2]>>([*:1].[*:2])"

@@ -642,3 +642,50 @@ def test_change_bond_order_totriple(
     for reac, expected in zip(reaction, expected_results):
         s = Chem.MolToSmiles(reac)
         assert compare_smiles(s, expected)
+
+
+@pytest.mark.parametrize(
+    "smiles, expected_results",
+    [
+        (
+            "C(=CCC)C1([SeH])N=CCC1C1CC=C1",
+            [
+                "CCC=CC([SeH])C(CC=N)C1C=CC1",
+                "CCC=CC([SeH])N=CCCC1C=CC1",
+                "CCC=CC([SeH])C(CC=N)C1C=CC1",
+                "CCC=CC(N)([SeH])C(CC)C1C=CC1",
+                "CCC=CC(N)([SeH])C(CC)C1C=CC1",
+                "C=NC([SeH])(C=CCC)C(C)C1C=CC1",
+                "C=NC([SeH])(C=CCC)C(C)C1C=CC1",
+                "CC=NC([SeH])(C=CCC)CC1C=CC1",
+                "CC=NC([SeH])(C=CCC)CC1C=CC1",
+                "CCC=CC([SeH])N=CCCC1C=CC1",
+                "CC=CCC1CC=NC1([SeH])C=CCC",
+                "C=CCCC1CC=NC1([SeH])C=CCC",
+                "CC=CCC1CC=NC1([SeH])C=CCC",
+                "C=CC(C)C1CC=NC1([SeH])C=CCC",
+                "C=CC(C)C1CC=NC1([SeH])C=CCC",
+                "CCC=CC1([SeH])N=CCC1C(C)CC",
+                "CCC=CC1([SeH])N=CCC1C(C)CC",
+                "C=CCCC1CC=NC1([SeH])C=CCC",
+            ],
+        ),
+    ],
+)
+def test_delete_cyclic_bond(general_crossover_fixture, smiles, expected_results):
+    from mutate import delete_cyclic_bond
+
+    co = general_crossover_fixture
+
+    mol = Chem.MolFromSmiles(smiles)
+    rxn_smarts = delete_cyclic_bond()
+    reaction = mutate(mol, rxn_smarts, co)
+    for reac, expected in zip(reaction, expected_results):
+        s = Chem.MolToSmiles(reac)
+        assert compare_smiles(s, expected)
+
+    # print(len(reaction))
+    # for r in reaction:
+    #     s = Chem.MolToSmiles(r)
+    #     print(s)
+    # assert False
