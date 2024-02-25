@@ -138,7 +138,7 @@ class Crossover:
             Chem.SanitizeMol(mol)
             test_mol = Chem.MolFromSmiles(Chem.MolToSmiles(mol))
             if test_mol == None:
-                return None
+                return False
             if not self.mol_is_sane(mol):
                 return False
             target_size = (
