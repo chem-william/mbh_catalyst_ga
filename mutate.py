@@ -27,19 +27,16 @@ def delete_atom(co: Crossover) -> RxnSMARTS:
     return delete_action.value.replace("TAG", co.tagger_atom)
 
 class AppendAtomChoices(Enum):
-    # SINGLE = ["C", "N", "O", "F", "S", "Cl", "Br"]
-    # DOUBLE = ["C", "N", "O"]
-    # TRIPLE = ["C", "N"]
     SINGLE = "[!TAG;!H0:1]>>[*:1]X"
     DOUBLE = "[*;!H0;!H1:1]>>[*:1]X"
     TRIPLE = "[*;H3:1]>>[*:1]X"
-def append_atom(p_BO: list[float], co: Crossover) -> RxnSMARTS:
+def append_atom(p_BO: list[float], crossover: Crossover) -> RxnSMARTS:
     append_action = np.random.choice(list(AppendAtomChoices), p=p_BO)
 
     if append_action is AppendAtomChoices.SINGLE:
         new_atom = np.random.choice(["C", "N", "O", "F", "S", "Cl", "Br"])
         rxn_smarts = append_action.value.replace("X", "-" + new_atom)
-        rxn_smarts = rxn_smarts.replace("TAG", co.tagger_atom)
+        rxn_smarts = rxn_smarts.replace("TAG", crossover.tagger_atom)
 
     if append_action is append_action.DOUBLE:
         new_atom = np.random.choice(["C", "N", "O"])
@@ -135,7 +132,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
             add_ring(),
             delete_atom(co),
             change_atom(mol),
-            append_atom(p_BO=[0.60, 0.35, 0.05], co=co),
+            append_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),
         ]
         rxn_smarts = np.random.choice(rxn_smarts_list, p=p)
 
