@@ -87,7 +87,7 @@ class ChangeBondOrderChoices(Enum):
 
 
 def change_bond_order(p: list[float]) -> RxnSMARTS:
-    return np.random.choice(list(ChangeBondOrderChoices), p=p)
+    return np.random.choice(list(ChangeBondOrderChoices), p=p).value
 
 
 def delete_cyclic_bond() -> RxnSMARTS:
@@ -103,8 +103,8 @@ class AddRingChoices(Enum):
     SixMembered = "[!TAG;!H0:1]~[*!r:2]~[*:3]~[*:4]~[*!r:5]~[!TAG;!H0:6]>>[*:1]1~[*:2]~[*:3]~[*:4]~[*:5]~[*:6]1"
 
 
-def add_ring(p: list[float]) -> RxnSMARTS:
-    return np.random.choice(list(AddRingChoices), p=p)
+def add_ring(p: list[float], crossover: Crossover) -> RxnSMARTS:
+    return np.random.choice(list(AddRingChoices), p=p).value.replace("TAG", crossover.tagger_atom)
 
 
 class ChangeAtomChoices(Enum):
@@ -147,7 +147,7 @@ def mutate(mol: Chem.Mol, co: Crossover):
             insert_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),
             change_bond_order(p=[0.45, 0.45, 0.05, 0.05]),
             delete_cyclic_bond(),
-            add_ring(p=[0.05, 0.05, 0.45, 0.45]),
+            add_ring(p=[0.05, 0.05, 0.45, 0.45], crossover=co),
             delete_atom(co),
             change_atom(p=[0.15, 0.15, 0.14, 0.14, 0.14, 0.14, 0.14], mol=mol),
             append_atom(p_BO=[0.60, 0.35, 0.05], crossover=co),

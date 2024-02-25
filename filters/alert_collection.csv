@@ -1254,3 +1254,8 @@ rule_id,rule_set,description,smarts,rule_set_name,priority,max
 1253,9,azetidin,N1~*~*~*1,MBH2,2,0
 1254,9,quaternary ammonium cation,[#7X3;H0;D3;+1],MBH2,2,0
 1255,9,ammonium cation,[#7;+1],MBH,2,0
+
+
+1255,9,ammonium cation,[#7;+1],electrodes,2,0
+1252,9,negative charge,[-*],electrodes,2,0
+7,1,R7 Peroxides,OO,electrodes,8,0

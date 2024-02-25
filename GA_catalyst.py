@@ -416,9 +416,9 @@ if __name__ == "__main__":
     selection_method = "rank"
     selection_pressure = 1.5
     molecule_filters = filters.get_molecule_filters(
-        ["MBH"], package_directory / "filters/alert_collection.csv"
+        ["electrodes"], package_directory / "filters/alert_collection.csv"
     )
-    co = Crossover(average_size=8.0, size_stdev=6.0, molecule_filter=molecule_filters, tagger_atom="Se")
+    co = Crossover(average_size=8.0, size_stdev=4.0, molecule_filter=molecule_filters, tagger_atom="Se")
 
     ga = GA(
         crossover=co,

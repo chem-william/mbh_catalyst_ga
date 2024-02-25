@@ -158,6 +158,16 @@ class Crossover:
         except:
             return False
 
+    def electrodes_OK(self, mol: Chem.Mol) -> bool:
+        amount_tag = 0
+        for atom in mol.GetAtoms():
+            if atom.GetSymbol() == self.tagger_atom:
+                amount_tag += 1
+            if amount_tag > 2:
+                return False
+
+        return amount_tag == 2
+
     def mol_is_sane(self, mol: Chem.Mol) -> bool:
         if self.molecule_filter is None:
             return True
@@ -183,10 +193,9 @@ class Crossover:
             "([*:1]~[1*].[1*]~[*:2])>>[*:1]-[*:2]",
             "([*:1]~[1*].[1*]~[*:2])>>[*:1]=[*:2]",
         ]
-        for i in range(10):
+        for _ in range(10):
             fragments_A = self.cut_ring(parent_A)
             fragments_B = self.cut_ring(parent_B)
-            # print [Chem.MolToSmiles(x) for x in list(fragments_A)+list(fragments_B)]
             if fragments_A == None or fragments_B == None:
                 return None
 
@@ -204,12 +213,11 @@ class Crossover:
                 for m in new_mol_trial:
                     m = m[0]
                     if self.mol_OK(m):
-                        new_mols += list(rxn2.RunReactants((m,)))
+                        new_mols.append(rxn2.RunReactants((m,)))
 
             new_mols2 = []
             for m in new_mols:
-                m = m[0]
-                if self.mol_OK(m) and self.ring_OK(m):
+                if self.mol_OK(m) and self.ring_OK(m) and self.electrodes_OK(m):
                     new_mols2.append(m)
 
             if len(new_mols2) > 0:
@@ -233,7 +241,7 @@ class Crossover:
             new_mols = []
             for mol in new_mol_trial:
                 mol = mol[0]
-                if self.mol_OK(mol):
+                if self.mol_OK(mol) and self.electrodes_OK(mol):
                     new_mols.append(mol)
 
             if len(new_mols) > 0:
