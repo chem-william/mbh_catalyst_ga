@@ -380,9 +380,6 @@ def test_append_atom_double(general_crossover_fixture, smiles, expected_results)
     rxn_smarts = AppendAtomChoices.DOUBLE.value.replace("X", "=" + DUMMY_ATOM)
     rxn_smarts = rxn_smarts.replace("TAG", TAGGER_ATOM)
     reaction = mutate(mol, rxn_smarts, co)
-    # for item in reaction:
-    #     print(Chem.MolToSmiles(item))
-    # assert False
     for reac, expected in zip(reaction, expected_results):
         s = Chem.MolToSmiles(reac)
         assert compare_smiles(s, expected)
@@ -424,6 +421,19 @@ def test_append_atom_triple(general_crossover_fixture, smiles, expected_results)
                 "CC1([SeH])NC(C)(C[SeH])C1N",
                 "CC1([SeH])CNC(C)([SeH])C1N",
                 "CC1([SeH])CC(N)C(C)([SeH])N1",
+                "CC1([SeH])NC(C)(C[SeH])C1N",
+                "CC1([SeH])CNC(C)([SeH])C1N",
+                "CC1([SeH])CNC(C)([SeH])C1N",
+                "CC1([SeH])CNC(C)([SeH])C1N",
+                "CCC1([SeH])NC(C)([SeH])C1N",
+                "CC1([SeH])NC(C)(C[SeH])C1N",
+                "CC1([SeH])CC(N)C(C)([SeH])N1",
+                "CCC1([SeH])NC(C)([SeH])C1N",
+                "CC1([SeH])NC(C)(C[SeH])C1N",
+                "CC1([SeH])CC(N)C(C)([SeH])N1",
+                "CC1([SeH])NC(C)([SeH])C1CN",
+                "CC1([SeH])CC(N)C(C)([SeH])N1",
+                "CC1([SeH])NC(C)([SeH])C1CN",
             ],
         ),
     ],
@@ -449,6 +459,22 @@ def test_insert_atom_single(general_crossover_fixture, smiles, expected_results)
             "CC1([SeH])N=CCC1C1CCC1",
             [
                 "C=CC1([SeH])N=CCC1C1CCC1",
+                "CC1([SeH])NC=CCC1C1CCC1",
+                "CC1([SeH])N=C=CCC1C1CCC1",
+                "CC1([SeH])N=CC=CC1C1CCC1",
+                "CC1([SeH])N=CC=CC1C1CCC1",
+                "CC1([SeH])N=CCC=C1C1CCC1",
+                "CC1([SeH])N=CCC1=CC1CCC1",
+                "CC1([SeH])C=C(C2CCC2)CC=N1",
+                "CC1([SeH])N=CCC1C=C1CCC1",
+                "CC1([SeH])N=CCC1C1=CCCC1",
+                "CC1([SeH])N=CCC1C1=CCCC1",
+                "CC1([SeH])N=CCC1C1C=CCC1",
+                "CC1([SeH])N=CCC1C1C=CCC1",
+                "CC1([SeH])N=CCC1C1CC=CC1",
+                "CC1([SeH])N=CCC1C1CC=CC1",
+                "CC1([SeH])N=CCC1C1C=CCC1",
+                "CC1([SeH])N=CCC1C1C=CCC1",
             ],
         ),
     ],
